@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Layers, Map as MapIcon, Volume2, VolumeX, Zap, Trophy, RotateCcw } from 'lucide-react';
+import { Home, Layers, Map as MapIcon, Volume2, VolumeX, Zap, Trophy, RotateCcw, Carrot } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
 
 const panel = 'bg-[#2a1a10]/75 backdrop-blur-md border border-[#fff4e0]/10 shadow-[0_8px_24px_rgba(0,0,0,0.35)]';
@@ -8,6 +8,7 @@ export default function TopBar({
   level,
   levelName,
   stamina,
+  totalCarrots = 0,
   freeViews,
   muted,
   onToggleMute,
@@ -16,6 +17,7 @@ export default function TopBar({
   onRestartLevel,
   onGoHome,
   onOpenLevelSelect,
+  onOpenCozyRoom,
 }) {
   const { t, lang, toggle } = useLang();
   return (
@@ -30,15 +32,30 @@ export default function TopBar({
             <Home className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <button
+            onClick={onOpenCozyRoom}
+            className={`${panel} w-9 sm:w-11 h-9 sm:h-11 rounded-2xl flex items-center justify-center text-amber-300 active:scale-90 transition hover:bg-[#3d2517]`}
+            title={t.cozyRoom}
+          >
+            <span className="text-base sm:text-lg">🏡</span>
+          </button>
+          <button
             onClick={onOpenLevelSelect}
             className={`${panel} w-9 sm:w-11 h-9 sm:h-11 rounded-2xl flex items-center justify-center text-[#ffd166] active:scale-90 transition hover:bg-[#3d2517]`}
             title={t.selectLevel}
           >
             <Layers className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
-          <div className={`${panel} rounded-2xl px-2.5 sm:px-4 py-1.5 sm:py-2 shrink-0 max-w-[120px] sm:max-w-none`}>
+          <button
+            onClick={onOpenCozyRoom}
+            className={`${panel} rounded-2xl px-2 sm:px-2.5 py-1.5 sm:py-2 flex items-center gap-1 text-orange-400 font-black text-xs sm:text-sm active:scale-90 transition hover:bg-[#3d2517]`}
+            title={t.carrotBalance}
+          >
+            <Carrot className="w-3.5 h-3.5 text-orange-400" />
+            <span>{totalCarrots}</span>
+          </button>
+          <div className={`${panel} rounded-2xl px-2 sm:px-3 py-1.5 sm:py-2 shrink-0 max-w-[100px] sm:max-w-none`}>
             <div className="text-[9px] sm:text-[10px] tracking-[0.2em] text-[#f7a45c] font-semibold truncate">{t.level(level)}</div>
-            <div className="text-[#fff4e0] font-bold text-xs sm:text-base leading-tight truncate">{levelName}</div>
+            <div className="text-[#fff4e0] font-bold text-xs sm:text-sm leading-tight truncate">{levelName}</div>
           </div>
         </div>
         <div className="flex items-center gap-1 sm:gap-2 pointer-events-auto shrink-0">

@@ -1,5 +1,16 @@
 import { drawTile } from './tiles';
-import { drawCarrot, drawBunny, drawBurrow, drawRoots, drawDrop, drawMaterial, drawBeetle } from './characters';
+import {
+  drawCarrot,
+  drawBunny,
+  drawBurrow,
+  drawRoots,
+  drawDrop,
+  drawMaterial,
+  drawBeetle,
+  drawHotSpring,
+  drawMolePeddler,
+  drawLuckyBox,
+} from './characters';
 
 const PARTICLE_COLORS = ['#c99461', '#8a5a33', '#e0b584', '#00f0ff', '#ef4444'];
 const DRILL_PARTICLE_COLORS = ['#00f0ff', '#ffffff', '#70e0ff', '#ff0055'];
@@ -21,6 +32,18 @@ export function render(ctx, fog, s, w, h, t, dpr) {
 
   drawBurrow(ctx, (s.start.x + 0.5) * ts, (s.start.y + 0.5) * ts, ts);
   drawRoots(ctx, (s.landmark.x + 0.5) * ts, (s.landmark.y + 0.5) * ts, ts * 2);
+
+  // Subterranean Encounters
+  (s.encounters || []).forEach((enc) => {
+    if (enc.type === 'spring') {
+      drawHotSpring(ctx, (enc.x + 0.5) * ts, (enc.y + 0.5) * ts, ts, t, enc.used);
+    } else if (enc.type === 'merchant') {
+      drawMolePeddler(ctx, (enc.x + 0.5) * ts, (enc.y + 0.5) * ts, ts, t);
+    } else if (enc.type === 'chest') {
+      drawLuckyBox(ctx, (enc.x + 0.5) * ts, (enc.y + 0.5) * ts, ts, t, enc.opened);
+    }
+  });
+
   s.droplets.forEach((d) => !d.taken && drawDrop(ctx, (d.x + 0.5 + d.ox) * ts, (d.y + 0.5 + d.oy) * ts, ts, t + d.x));
   s.materials.forEach((m) => !m.taken && drawMaterial(ctx, (m.x + 0.5 + m.ox) * ts, (m.y + 0.5 + m.oy) * ts, m.type, ts, t));
   s.carrots.forEach((c) => !c.taken && drawCarrot(ctx, (c.x + 0.5) * ts, (c.y + 0.5) * ts + Math.sin(t * 3 + c.x) * ts * 0.05, ts * 0.5, 0.5, t));
@@ -59,6 +82,11 @@ export function render(ctx, fog, s, w, h, t, dpr) {
   ctx.globalAlpha = 1;
   ctx.restore();
 
+  // Full Vision Lens active: Skip fog of war
+  if (s.visionTimer > 0) {
+    return;
+  }
+
   // Fog of war
   if (fog.width !== Math.round(w * dpr) || fog.height !== Math.round(h * dpr)) {
     fog.width = Math.round(w * dpr); fog.height = Math.round(h * dpr);
@@ -80,6 +108,15 @@ export function render(ctx, fog, s, w, h, t, dpr) {
   s.materials
     .filter((m) => m.type === 'shard' && !m.taken)
     .forEach((m) => hole((m.x + 0.5) * ts - camX, (m.y + 0.5) * ts - camY, ts * 1.1));
+
+  (s.encounters || []).forEach((enc) => {
+    if (enc.type === 'spring' && !enc.used) {
+      hole((enc.x + 0.5) * ts - camX, (enc.y + 0.5) * ts - camY, ts * 1.5);
+    } else if (enc.type === 'merchant') {
+      hole((enc.x + 0.5) * ts - camX, (enc.y + 0.5) * ts - camY, ts * 1.4);
+    }
+  });
+
   hole(gx - camX, gy - camY, ts * 1.5);
   ctx.drawImage(fog, 0, 0, w, h);
 }

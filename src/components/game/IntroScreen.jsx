@@ -3,10 +3,22 @@ import { motion } from 'framer-motion';
 import { Carrot, Play, MapPin } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
 
-export default function IntroScreen({ onStart, onOpenLevelSelect }) {
+export default function IntroScreen({ onStart, onOpenLevelSelect, onOpenCozyRoom, totalCarrots = 0 }) {
   const { t, lang, toggle } = useLang();
   return (
     <div className="absolute inset-0 z-50 overflow-y-auto bg-gradient-to-b from-[#7fb35a] via-[#5a331b] to-[#1a0f08]">
+      <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onOpenCozyRoom}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#3d2417]/80 hover:bg-[#4d2d1d] border border-orange-500/40 text-orange-200 text-xs font-black shadow active:scale-95 transition cursor-pointer"
+        >
+          <Carrot className="w-3.5 h-3.5 text-orange-400" />
+          <span>{totalCarrots}</span>
+          <span className="text-[10px] text-amber-300 font-bold ml-0.5">{t.cozyRoom}</span>
+        </button>
+      </div>
+
       <div className="absolute top-4 right-4 z-10">
         <button
           onClick={toggle}
@@ -36,6 +48,15 @@ export default function IntroScreen({ onStart, onOpenLevelSelect }) {
             className="w-full flex items-center justify-center gap-2.5 py-4 px-6 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-lg shadow-[0_12px_36px_rgba(249,115,22,0.45)] ring-2 ring-orange-300/40 active:scale-95 transition"
           >
             <Play className="w-6 h-6" fill="white" /> <span>{t.start}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onOpenCozyRoom}
+            className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-2xl bg-gradient-to-r from-amber-700/90 to-orange-700/90 hover:from-amber-700 hover:to-orange-700 text-amber-100 font-extrabold text-base shadow-md active:scale-95 transition border-2 border-amber-400/50 cursor-pointer"
+          >
+            <span className="text-lg">🏡</span>
+            <span>{t.cozyRoomBtn}</span>
           </button>
 
           <button

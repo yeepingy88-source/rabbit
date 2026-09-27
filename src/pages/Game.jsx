@@ -22,6 +22,8 @@ import MapPreview from '@/components/game/MapPreview';
 import VictoryScreen from '@/components/game/VictoryScreen';
 import ExhaustedScreen from '@/components/game/ExhaustedScreen';
 import LevelSelectModal from '@/components/game/LevelSelectModal';
+import CozyRoomModal from '@/components/game/CozyRoomModal';
+import MoleMerchantModal from '@/components/game/MoleMerchantModal';
 
 const DEFAULT_INV = {
   water: 0,
@@ -62,9 +64,33 @@ export default function Game() {
   const [showBag, setShowBag] = useState(false);
   const [showBoard, setShowBoard] = useState(false);
   const [showLevelSelect, setShowLevelSelect] = useState(false);
+  const [showCozyRoom, setShowCozyRoom] = useState(false);
+  const [showMerchant, setShowMerchant] = useState(false);
+  const merchantDismissedRef = useRef(false);
   const [bagReady, setBagReady] = useState(false);
   const [drillArmed, setDrillArmed] = useState(false);
   const [exhaustedReason, setExhaustedReason] = useState('tired');
+
+  // Persistent Carrot Currency stored in localStorage
+  const [totalCarrots, setTotalCarrots] = useState(() => {
+    try {
+      const val = localStorage.getItem('totalCarrots');
+      if (val !== null) return Math.max(0, parseInt(val, 10) || 0);
+      // Give initial 3 carrots to new players for room enjoyment
+      localStorage.setItem('totalCarrots', '3');
+      return 3;
+    } catch {
+      return 3;
+    }
+  });
+
+  const handleUpdateCarrots = useCallback((newCount) => {
+    const clamped = Math.max(0, newCount);
+    setTotalCarrots(clamped);
+    try {
+      localStorage.setItem('totalCarrots', String(clamped));
+    } catch {}
+  }, []);
 
   // Persistent Level Stars earned
   const [levelStars, setLevelStars] = useState(() => {
@@ -119,6 +145,15 @@ export default function Game() {
         } catch {}
         return next;
       });
+
+      // Reset merchant trigger if bunny walks away
+      const s = stateRef.current;
+      if (s?.encounters) {
+        const m = s.encounters.find((e) => e.type === 'merchant');
+        if (m && Math.hypot(m.x + 0.5 - s.x, m.y + 0.5 - s.y) > 2.2) {
+          merchantDismissedRef.current = false;
+        }
+      }
     }, 1000);
     return () => clearInterval(timer);
   }, [phase]);
@@ -140,7 +175,16 @@ export default function Game() {
     } catch {}
   }, [craft]);
 
-  pausedRef.current = phase !== 'playing' || !!mapMode || showAdModal || !!adType || showBag || showBoard || showLevelSelect;
+  pausedRef.current =
+    phase !== 'playing' ||
+    !!mapMode ||
+    showAdModal ||
+    !!adType ||
+    showBag ||
+    showBoard ||
+    showLevelSelect ||
+    showCozyRoom ||
+    showMerchant;
 
   const startLevel = (n, staminaValue = 100, isReplay = false) => {
     const clampedLevel = Math.max(1, n);
@@ -155,6 +199,9 @@ export default function Game() {
     setShowBag(false);
     setShowBoard(false);
     setShowLevelSelect(false);
+    setShowCozyRoom(false);
+    setShowMerchant(false);
+    merchantDismissedRef.current = false;
     setShowAdModal(false);
     setAdType(null);
     setPhase('preview');
@@ -240,7 +287,26 @@ export default function Game() {
         setInv((p) => ({ ...p, water: (p.water || 0) + 1 }));
         setHint(flash(t.gotWater));
       } else if (type === 'pickup') {
+        handleUpdateCarrots(totalCarrots + 1);
         setHint(flash(t.gotCarrot));
+      } else if (type === 'hotSpring') {
+        sfx.spring();
+        setStamina(100);
+        setHint(flash(t.hotSpringHealed));
+      } else if (type === 'nearMerchant') {
+        if (!merchantDismissedRef.current) {
+          merchantDismissedRef.current = true;
+          setShowMerchant(true);
+        }
+      } else if (typeof type === 'object' && type.type === 'luckyBox') {
+        sfx.chest();
+        setInv((p) => ({
+          ...p,
+          water: (p.water || 0) + 2,
+          clay: (p.clay || 0) + 2,
+          shard: (p.shard || 0) + (type.gotShard ? 1 : 0),
+        }));
+        setHint(flash(type.gotShard ? `${t.luckyBoxOpened} ${t.luckyBoxShard}` : t.luckyBoxOpened));
       } else if (type === 'fiber') {
         setInv((p) => ({ ...p, fiber: (p.fiber || 0) + 1 }));
         setHint(flash(t.gotFiber));
@@ -258,8 +324,30 @@ export default function Game() {
         setPhase('exhausted');
       }
     },
-    [t]
+    [t, totalCarrots, handleUpdateCarrots]
   );
+
+  const handleApplyVisionBuff = useCallback((seconds = 15) => {
+    if (stateRef.current) {
+      stateRef.current.visionTimer = seconds;
+    }
+    setHint(flash(t.visionLensActive));
+  }, [t]);
+
+  const handleApplySpeedBuff = useCallback((seconds = 30) => {
+    if (stateRef.current) {
+      stateRef.current.speedTimer = seconds;
+    }
+    setHint(flash(t.rocketShoesActive));
+  }, [t]);
+
+  const handleArmDrill = useCallback(() => {
+    if (stateRef.current) {
+      stateRef.current.drillActive = true;
+    }
+    setDrillArmed(true);
+    setHint(flash(t.drillReady));
+  }, [t]);
 
   const handleWin = useCallback(() => {
     const s = stateRef.current;
@@ -421,6 +509,7 @@ export default function Game() {
             level={level}
             levelName={levelDisplayName}
             stamina={stamina}
+            totalCarrots={totalCarrots}
             freeViews={freeViews}
             muted={muted}
             onToggleMute={toggleMute}
@@ -429,7 +518,22 @@ export default function Game() {
             onRestartLevel={handleReplayLevel}
             onGoHome={handleGoHome}
             onOpenLevelSelect={() => setShowLevelSelect(true)}
+            onOpenCozyRoom={() => setShowCozyRoom(true)}
           />
+
+          {/* Quick Trade Prompt when near Mole Peddler */}
+          {stateRef.current?.encounters?.some(
+            (e) => e.type === 'merchant' && Math.hypot(e.x + 0.5 - stateRef.current.x, e.y + 0.5 - stateRef.current.y) < 1.8
+          ) && (
+            <button
+              type="button"
+              onClick={() => setShowMerchant(true)}
+              className="absolute top-20 left-4 z-30 flex items-center gap-2 py-2 px-3.5 rounded-2xl bg-gradient-to-r from-amber-700 to-orange-700 border-2 border-amber-400 text-white font-black text-xs shadow-lg active:scale-95 transition cursor-pointer"
+            >
+              <span className="text-base">🕶️</span>
+              <span>{t.moleMerchantTitle}</span>
+            </button>
+          )}
 
           <Joystick inputRef={inputRef} />
 
@@ -486,6 +590,8 @@ export default function Game() {
         <IntroScreen
           onStart={(lvl = 1) => startLevel(lvl, 100, true)}
           onOpenLevelSelect={() => setShowLevelSelect(true)}
+          onOpenCozyRoom={() => setShowCozyRoom(true)}
+          totalCarrots={totalCarrots}
         />
       )}
       {phase === 'exhausted' && (
@@ -516,6 +622,25 @@ export default function Game() {
           levelStars={levelStars}
           onSelectLevel={handleSelectLevel}
           onClose={() => setShowLevelSelect(false)}
+        />
+      )}
+      {showCozyRoom && (
+        <CozyRoomModal
+          totalCarrots={totalCarrots}
+          onUpdateCarrots={handleUpdateCarrots}
+          onClose={() => setShowCozyRoom(false)}
+        />
+      )}
+      {showMerchant && (
+        <MoleMerchantModal
+          totalCarrots={totalCarrots}
+          onUpdateCarrots={handleUpdateCarrots}
+          inv={inv}
+          onUpdateInv={setInv}
+          onApplyVisionBuff={handleApplyVisionBuff}
+          onApplySpeedBuff={handleApplySpeedBuff}
+          onArmDrill={handleArmDrill}
+          onClose={() => setShowMerchant(false)}
         />
       )}
     </div>

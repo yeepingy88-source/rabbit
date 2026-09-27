@@ -47,6 +47,13 @@ export const sfx = {
     setTimeout(() => tone(110, 0.22, 'square', 0.22, 50), 50);
   },
   tick: () => tone(880, 0.04, 'sine', 0.05),
+  spring: () => seq([440, 554, 659, 880, 1108], 90, 'sine', 0.12),
+  chest: () => {
+    seq([523, 659, 784, 1047], 80, 'triangle', 0.14);
+    setTimeout(() => seq([1047, 1319, 1568], 70, 'sine', 0.12), 340);
+  },
+  buy: () => seq([587, 880, 1175], 80, 'sine', 0.12),
+  powerup: () => tone(400, 0.32, 'sine', 0.14, 1200),
 };
 
 export const isMuted = () => muted;

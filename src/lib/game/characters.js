@@ -285,3 +285,224 @@ export function drawBeetle(ctx, x, y, ts, dir, t) {
 
   ctx.restore();
 }
+
+export function drawHotSpring(ctx, x, y, ts, t, used = false) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  // Outer ambient warm glow
+  if (!used) {
+    const pulse = 1 + 0.08 * Math.sin(t * 3);
+    const rad = ts * 0.75 * pulse;
+    const g = ctx.createRadialGradient(0, 0, ts * 0.2, 0, 0, rad);
+    g.addColorStop(0, 'rgba(56, 189, 248, 0.45)');
+    g.addColorStop(0.6, 'rgba(56, 189, 248, 0.15)');
+    g.addColorStop(1, 'rgba(56, 189, 248, 0)');
+    ctx.fillStyle = g;
+    circle(ctx, 0, 0, rad);
+  }
+
+  // Earthen stone rim
+  ctx.fillStyle = '#3e2718';
+  circle(ctx, 0, 0, ts * 0.48);
+  ctx.fillStyle = '#65432a';
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    circle(ctx, Math.cos(a) * ts * 0.38, Math.sin(a) * ts * 0.38, ts * 0.12);
+  }
+
+  // Water pool
+  ctx.fillStyle = used ? '#0284c7' : '#38bdf8';
+  circle(ctx, 0, 0, ts * 0.36);
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  circle(ctx, -ts * 0.1, -ts * 0.08, ts * 0.18);
+
+  // Animated steam and heart bubbles
+  if (!used) {
+    for (let i = 0; i < 3; i++) {
+      const st = (t * 1.5 + i * 0.6) % 1;
+      const sx = (Math.sin(i * 2.5 + t * 2) * 0.15) * ts;
+      const sy = -ts * 0.15 - st * ts * 0.55;
+      const sa = Math.sin(st * Math.PI) * 0.8;
+      ctx.fillStyle = `rgba(255, 255, 255, ${sa * 0.55})`;
+      circle(ctx, sx, sy, ts * (0.05 + st * 0.06));
+    }
+
+    // Little floating heart
+    const ht = (t * 1.2) % 1;
+    const hx = Math.sin(t * 3) * ts * 0.12;
+    const hy = -ts * 0.2 - ht * ts * 0.4;
+    const ha = Math.sin(ht * Math.PI);
+    ctx.font = `${Math.round(ts * 0.28)}px sans-serif`;
+    ctx.fillStyle = `rgba(244, 63, 94, ${ha * 0.9})`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('❤️', hx, hy);
+  }
+
+  ctx.restore();
+}
+
+export function drawMolePeddler(ctx, x, y, ts, t) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  // Gentle idle bounce
+  const bounce = Math.sin(t * 4) * ts * 0.03;
+
+  // Wooden Pushcart
+  ctx.fillStyle = '#5c3a21';
+  ctx.fillRect(-ts * 0.42, -ts * 0.15 + bounce, ts * 0.4, ts * 0.35);
+  ctx.fillStyle = '#3d2514';
+  ctx.fillRect(-ts * 0.42, -ts * 0.15 + bounce, ts * 0.4, ts * 0.06);
+
+  // Pushcart wheels
+  ctx.fillStyle = '#1c1917';
+  circle(ctx, -ts * 0.35, ts * 0.22 + bounce, ts * 0.09);
+  circle(ctx, -ts * 0.12, ts * 0.22 + bounce, ts * 0.09);
+  ctx.fillStyle = '#78716c';
+  circle(ctx, -ts * 0.35, ts * 0.22 + bounce, ts * 0.03);
+  circle(ctx, -ts * 0.12, ts * 0.22 + bounce, ts * 0.03);
+
+  // Goods on cart: Glowing bottle & crystals
+  ctx.fillStyle = '#06b6d4';
+  oval(ctx, -ts * 0.3, -ts * 0.24 + bounce, ts * 0.05, ts * 0.08);
+  ctx.fillStyle = '#f59e0b';
+  oval(ctx, -ts * 0.18, -ts * 0.24 + bounce, ts * 0.05, ts * 0.07);
+
+  // Small lantern hanging from pole
+  ctx.strokeStyle = '#292524';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(-ts * 0.38, -ts * 0.15 + bounce);
+  ctx.lineTo(-ts * 0.38, -ts * 0.38 + bounce);
+  ctx.stroke();
+  const lanternGlow = 1 + 0.15 * Math.sin(t * 5);
+  const lg = ctx.createRadialGradient(-ts * 0.38, -ts * 0.38 + bounce, 0, -ts * 0.38, -ts * 0.38 + bounce, ts * 0.25 * lanternGlow);
+  lg.addColorStop(0, 'rgba(251, 191, 36, 0.7)');
+  lg.addColorStop(1, 'rgba(251, 191, 36, 0)');
+  ctx.fillStyle = lg;
+  circle(ctx, -ts * 0.38, -ts * 0.38 + bounce, ts * 0.25 * lanternGlow);
+  ctx.fillStyle = '#fbbf24';
+  circle(ctx, -ts * 0.38, -ts * 0.38 + bounce, ts * 0.05);
+
+  // Mole Body
+  ctx.fillStyle = '#292524';
+  oval(ctx, ts * 0.16, ts * 0.05 + bounce, ts * 0.22, ts * 0.26);
+
+  // Mole Snout
+  ctx.fillStyle = '#f472b6';
+  oval(ctx, ts * 0.16, ts * 0.04 + bounce, ts * 0.11, ts * 0.08);
+  ctx.fillStyle = '#be185d';
+  circle(ctx, ts * 0.16, ts * 0.01 + bounce, ts * 0.04);
+
+  // Cool Black Sunglasses!
+  ctx.fillStyle = '#09090b';
+  oval(ctx, ts * 0.08, -ts * 0.08 + bounce, ts * 0.07, ts * 0.055);
+  oval(ctx, ts * 0.24, -ts * 0.08 + bounce, ts * 0.07, ts * 0.055);
+  ctx.strokeStyle = '#18181b';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(ts * 0.02, -ts * 0.08 + bounce);
+  ctx.lineTo(ts * 0.3, -ts * 0.08 + bounce);
+  ctx.stroke();
+
+  // White lens glint
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(ts * 0.06, -ts * 0.1 + bounce);
+  ctx.lineTo(ts * 0.09, -ts * 0.06 + bounce);
+  ctx.moveTo(ts * 0.22, -ts * 0.1 + bounce);
+  ctx.lineTo(ts * 0.25, -ts * 0.06 + bounce);
+  ctx.stroke();
+
+  // Little miner hardhat with a light
+  ctx.fillStyle = '#ea580c';
+  oval(ctx, ts * 0.16, -ts * 0.22 + bounce, ts * 0.18, ts * 0.09);
+  circle(ctx, ts * 0.16, -ts * 0.24 + bounce, ts * 0.05);
+
+  // "🕶️" floating badge
+  const talkPulse = Math.sin(t * 3) * 2;
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = `bold ${Math.round(ts * 0.24)}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('🕶️', ts * 0.16, -ts * 0.38 + bounce + talkPulse);
+
+  ctx.restore();
+}
+
+export function drawLuckyBox(ctx, x, y, ts, t, opened = false) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  if (!opened) {
+    // Golden mystery aura
+    const pulse = 1 + 0.1 * Math.sin(t * 4);
+    const g = ctx.createRadialGradient(0, 0, ts * 0.1, 0, 0, ts * 0.6 * pulse);
+    g.addColorStop(0, 'rgba(245, 158, 11, 0.55)');
+    g.addColorStop(0.7, 'rgba(245, 158, 11, 0.15)');
+    g.addColorStop(1, 'rgba(245, 158, 11, 0)');
+    ctx.fillStyle = g;
+    circle(ctx, 0, 0, ts * 0.6 * pulse);
+  }
+
+  // Chest Base
+  const bw = ts * 0.62, bh = ts * 0.36;
+  ctx.fillStyle = '#78350f';
+  if (typeof ctx.roundRect === 'function') {
+    ctx.roundRect(-bw / 2, -bh / 2 + ts * 0.08, bw, bh, ts * 0.06);
+  } else {
+    ctx.rect(-bw / 2, -bh / 2 + ts * 0.08, bw, bh);
+  }
+  ctx.fill();
+
+  // Wood planks
+  ctx.fillStyle = '#92400e';
+  ctx.fillRect(-bw / 2 + ts * 0.04, -bh / 2 + ts * 0.12, bw - ts * 0.08, bh - ts * 0.08);
+
+  // Golden metal bands
+  ctx.fillStyle = '#f59e0b';
+  ctx.fillRect(-bw * 0.35, -bh / 2 + ts * 0.08, ts * 0.06, bh);
+  ctx.fillRect(bw * 0.35 - ts * 0.06, -bh / 2 + ts * 0.08, ts * 0.06, bh);
+
+  if (!opened) {
+    // Closed Lid
+    ctx.fillStyle = '#b45309';
+    if (typeof ctx.roundRect === 'function') {
+      ctx.roundRect(-bw / 2 - ts * 0.02, -bh / 2 - ts * 0.12, bw + ts * 0.04, ts * 0.22, ts * 0.08);
+    } else {
+      ctx.rect(-bw / 2 - ts * 0.02, -bh / 2 - ts * 0.12, bw + ts * 0.04, ts * 0.22);
+    }
+    ctx.fill();
+
+    // Golden lock
+    ctx.fillStyle = '#fbbf24';
+    circle(ctx, 0, -bh / 2 + ts * 0.04, ts * 0.07);
+    ctx.fillStyle = '#451a03';
+    circle(ctx, 0, -bh / 2 + ts * 0.04, ts * 0.025);
+
+    // Sparkle star
+    const starA = Math.abs(Math.sin(t * 3));
+    ctx.fillStyle = `rgba(255, 255, 255, ${starA})`;
+    ctx.font = `${Math.round(ts * 0.22)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('✨', bw * 0.38, -bh * 0.6);
+  } else {
+    // Open Lid
+    ctx.fillStyle = '#b45309';
+    ctx.beginPath();
+    ctx.moveTo(-bw / 2, -bh / 2 + ts * 0.08);
+    ctx.lineTo(-bw / 2 - ts * 0.06, -bh / 2 - ts * 0.24);
+    ctx.lineTo(bw / 2 + ts * 0.06, -bh / 2 - ts * 0.24);
+    ctx.lineTo(bw / 2, -bh / 2 + ts * 0.08);
+    ctx.closePath();
+    ctx.fill();
+
+    // Inner golden glow
+    ctx.fillStyle = 'rgba(251, 191, 36, 0.45)';
+    ctx.fillRect(-bw * 0.4, -bh / 2 + ts * 0.06, bw * 0.8, ts * 0.12);
+  }
+
+  ctx.restore();
+}

@@ -37,15 +37,34 @@ export function step(s, input, dt, ev) {
   s.time += dt;
   // Intentionally NO passive stamina regen
   s.shake = Math.max(0, s.shake - dt);
+
+  // Timers countdown
+  if (s.speedTimer > 0) s.speedTimer = Math.max(0, s.speedTimer - dt);
+  if (s.visionTimer > 0) s.visionTimer = Math.max(0, s.visionTimer - dt);
+
   const ix = input.x, iy = input.y;
   s.moving = !!(ix || iy);
   if (s.moving) {
     s.facing = { x: ix, y: iy };
-    const d = SPEED * dt;
+    const currentSpeed = s.speedTimer > 0 ? SPEED * 1.6 : SPEED;
+    const d = currentSpeed * dt;
     const nx = s.x + ix * d;
     if (!hits(s, nx, s.y)) s.x = nx; else if (!iy) nudge(s, 'y', Math.sign(ix), d);
     const ny = s.y + iy * d;
     if (!hits(s, s.x, ny)) s.y = ny; else if (!ix) nudge(s, 'x', Math.sign(iy), d);
+
+    // Rocket shoes particles
+    if (s.speedTimer > 0 && Math.random() < 0.4) {
+      s.particles.push({
+        x: s.x - ix * 0.25,
+        y: s.y - iy * 0.25,
+        vx: -ix * 1.5 + (Math.random() - 0.5) * 1.0,
+        vy: -iy * 1.5 + (Math.random() - 0.5) * 1.0,
+        life: 0.35,
+        c: 3, // glowing cyan / orange trail
+        drill: true,
+      });
+    }
   }
   for (const c of s.carrots) {
     if (!c.taken && Math.hypot(c.x + 0.5 - s.x, c.y + 0.5 - s.y) < 0.55) {
@@ -66,6 +85,58 @@ export function step(s, input, dt, ev) {
     if (!m.taken && Math.hypot(m.x + 0.5 + m.ox - s.x, m.y + 0.5 + m.oy - s.y) < 0.55) {
       m.taken = true;
       ev.push(m.type);
+    }
+  }
+
+  // Subterranean Encounters Interaction
+  if (s.encounters) {
+    for (const enc of s.encounters) {
+      const dist = Math.hypot(enc.x + 0.5 - s.x, enc.y + 0.5 - s.y);
+
+      // 1. Hot Spring (restores stamina to 100 & heart particles)
+      if (enc.type === 'spring' && !enc.used && dist < 0.65) {
+        enc.used = true;
+        s.stamina = 100;
+        // Healing particles
+        for (let i = 0; i < 16; i++) {
+          const a = Math.random() * Math.PI * 2, v = 1 + Math.random() * 2;
+          s.particles.push({
+            x: enc.x + 0.5,
+            y: enc.y + 0.5,
+            vx: Math.cos(a) * v,
+            vy: Math.sin(a) * v - 1.2,
+            life: 0.6 + Math.random() * 0.4,
+            c: 3,
+            drill: true,
+          });
+        }
+        ev.push('hotSpring');
+      }
+
+      // 2. Mole Peddler (near notification)
+      if (enc.type === 'merchant' && dist < 0.8) {
+        ev.push('nearMerchant');
+      }
+
+      // 3. Mysterious Lucky Box (chest opening)
+      if (enc.type === 'chest' && !enc.opened && dist < 0.65) {
+        enc.opened = true;
+        const gotShard = Math.random() < 0.5;
+        // Chest opening golden particles
+        for (let i = 0; i < 24; i++) {
+          const a = Math.random() * Math.PI * 2, v = 1.5 + Math.random() * 3.5;
+          s.particles.push({
+            x: enc.x + 0.5,
+            y: enc.y + 0.5,
+            vx: Math.cos(a) * v,
+            vy: Math.sin(a) * v - 1.5,
+            life: 0.7 + Math.random() * 0.4,
+            c: i % 4,
+            drill: true,
+          });
+        }
+        ev.push({ type: 'luckyBox', gotShard });
+      }
     }
   }
 

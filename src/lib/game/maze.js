@@ -353,10 +353,95 @@ export function createLevel(level) {
     });
   }
 
+  // Subterranean Encounters (Large Mazes Level 6+)
+  // 1. Hot Spring (♨️): restores 100% stamina
+  // 2. Mole Peddler (🕶️): trades vision lens, rocket shoes, drill
+  // 3. Lucky Box (📦): hidden behind diggable soft dirt
+  const encounters = [];
+  if (level >= 6) {
+    // 1. Underground Hot Spring
+    if (spots.length > 0) {
+      const [hx, hy] = spots.splice(0, 1)[0];
+      encounters.push({
+        id: 'spring-1',
+        type: 'spring',
+        x: hx,
+        y: hy,
+        used: false,
+      });
+    }
+
+    // 2. Mole Peddler
+    if (spots.length > 0) {
+      const [mx, my] = spots.splice(0, 1)[0];
+      encounters.push({
+        id: 'merchant-1',
+        type: 'merchant',
+        x: mx,
+        y: my,
+      });
+    }
+
+    // 3. Mysterious Lucky Box (Hidden behind diggable soft dirt)
+    // Find an unused dead end to place the chest, and seal its entrance with a SOFT dirt wall!
+    let chestPlaced = false;
+    for (const d of deadEnds) {
+      // Don't place on start, exit, or landmark
+      if (
+        (d.x === start.x && d.y === start.y) ||
+        (d.x === exit.x && d.y === exit.y) ||
+        (d.x === landmark.x && d.y === landmark.y)
+      ) continue;
+
+      // Check if spot already occupied
+      const occupied = materials.some(m => m.x === d.x && m.y === d.y) ||
+                       carrots.some(c => c.x === d.x && c.y === d.y) ||
+                       droplets.some(dr => dr.x === d.x && dr.y === d.y) ||
+                       encounters.some(e => e.x === d.x && e.y === d.y);
+      if (occupied) continue;
+
+      // Find the single open path cell leading to this dead end
+      let entrance = null;
+      for (const [dx, dy] of DIRS) {
+        const nx = d.x + dx, ny = d.y + dy;
+        if (nx > 0 && ny > 0 && nx < W - 1 && ny < H - 1 && grid[ny][nx] === PATH) {
+          entrance = [nx, ny];
+          break;
+        }
+      }
+
+      if (entrance) {
+        // Seal entrance with SOFT diggable wall
+        grid[entrance[1]][entrance[0]] = SOFT;
+        encounters.push({
+          id: 'chest-1',
+          type: 'chest',
+          x: d.x,
+          y: d.y,
+          opened: false,
+        });
+        chestPlaced = true;
+        break;
+      }
+    }
+
+    if (!chestPlaced && spots.length > 0) {
+      const [cx, cy] = spots.splice(0, 1)[0];
+      encounters.push({
+        id: 'chest-1',
+        type: 'chest',
+        x: cx,
+        y: cy,
+        opened: false,
+      });
+    }
+  }
+
   return {
-    level, W, H, grid, start, exit, landmark, carrots, droplets, materials, beetles,
+    level, W, H, grid, start, exit, landmark, carrots, droplets, materials, beetles, encounters,
     x: start.x + 0.5, y: start.y + 0.5, facing: { x: 0, y: -1 },
     stamina: 100, water: 0, freeDigs: 0, drillActive: false, time: 0, digs: 0, particles: [], shake: 0, won: false, moving: false, beetleCooldown: 0,
+    speedTimer: 0, visionTimer: 0,
   };
 }
 
