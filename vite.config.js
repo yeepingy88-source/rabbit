@@ -5,8 +5,11 @@ import path from 'path';
 // Static GitHub Pages build — no Base44 plugin required
 export default defineConfig({
   plugins: [react()],
-  // Project site: https://yeepingy88-source.github.io/rabbit/
-  base: '/rabbit/',
+  base: '/',
+  server: {
+    host: '0.0.0.0',
+    port: 3000,
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

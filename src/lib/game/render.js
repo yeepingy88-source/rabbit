@@ -1,7 +1,8 @@
 import { drawTile } from './tiles';
 import { drawCarrot, drawBunny, drawBurrow, drawRoots, drawDrop, drawMaterial } from './characters';
 
-const PARTICLE_COLORS = ['#c99461', '#8a5a33', '#e0b584'];
+const PARTICLE_COLORS = ['#c99461', '#8a5a33', '#e0b584', '#00f0ff'];
+const DRILL_PARTICLE_COLORS = ['#00f0ff', '#ffffff', '#70e0ff', '#ff0055'];
 
 export function render(ctx, fog, s, w, h, t, dpr) {
   const ts = Math.max(36, Math.min(w, h) / 7.5);
@@ -31,12 +32,12 @@ export function render(ctx, fog, s, w, h, t, dpr) {
   drawCarrot(ctx, gx, gy, ts * 1.9, 1.2, t);
 
   s.particles.forEach((p) => {
-    ctx.fillStyle = PARTICLE_COLORS[p.c];
+    ctx.fillStyle = p.drill ? DRILL_PARTICLE_COLORS[p.c % 4] : PARTICLE_COLORS[p.c % 3];
     ctx.globalAlpha = Math.min(1, p.life * 2);
     ctx.fillRect(p.x * ts - ts * 0.04, p.y * ts - ts * 0.04, ts * 0.08, ts * 0.08);
   });
   ctx.globalAlpha = 1;
-  drawBunny(ctx, s.x * ts, s.y * ts, ts, s.facing, t, s.moving);
+  drawBunny(ctx, s.x * ts, s.y * ts, ts, s.facing, t, s.moving, s.drillActive);
   ctx.restore();
 
   // Fog of war
@@ -57,6 +58,9 @@ export function render(ctx, fog, s, w, h, t, dpr) {
   };
   hole(s.x * ts - camX, s.y * ts - camY, ts * 2.8);
   s.droplets.forEach((d) => !d.taken && hole((d.x + 0.5 + d.ox) * ts - camX, (d.y + 0.5 + d.oy) * ts - camY, ts * (1 + 0.1 * Math.sin(t * 2.5 + d.x))));
+  s.materials
+    .filter((m) => m.type === 'shard' && !m.taken)
+    .forEach((m) => hole((m.x + 0.5) * ts - camX, (m.y + 0.5) * ts - camY, ts * 1.1));
   hole(gx - camX, gy - camY, ts * 1.5);
   ctx.drawImage(fog, 0, 0, w, h);
 }

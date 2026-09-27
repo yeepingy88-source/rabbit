@@ -1,0 +1,8 @@
+{
+  "name": "Rabbit Game",
+  "description": "An adventure maze game featuring a rabbit collecting carrots, digging treasures, crafting tools, and challenging the leaderboard.",
+  "requestFramePermissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

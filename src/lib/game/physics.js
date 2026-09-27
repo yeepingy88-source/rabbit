@@ -77,8 +77,35 @@ export function dig(s) {
   const fx = Math.sign(s.facing.x), fy = Math.sign(s.facing.y);
   const tx = Math.floor(s.x), ty = Math.floor(s.y);
   const cands = fx && fy ? [[tx + fx, ty], [tx, ty + fy], [tx + fx, ty + fy]] : [[tx + fx, ty + fy]];
-  // Dig only interior soft walls (not on the outer ring)
+  // Dig only interior walls (keep outer border solid)
   const inside = (x, y) => x > 0 && y > 0 && x < s.W - 1 && y < s.H - 1;
+
+  // Rock Breaker Drill: permanently destroys 1 solid stone wall (or soft wall)
+  if (s.drillActive) {
+    const stoneTarget = cands.find(([x, y]) => inside(x, y) && s.grid[y][x] === STONE);
+    const target = stoneTarget || cands.find(([x, y]) => inside(x, y) && s.grid[y][x] === SOFT);
+    if (target) {
+      const [x, y] = target;
+      s.grid[y][x] = PATH;
+      s.drillActive = false;
+      s.digs++;
+      s.shake = 0.35;
+      for (let i = 0; i < 32; i++) {
+        const a = Math.random() * Math.PI * 2, v = 2 + Math.random() * 4.5;
+        s.particles.push({
+          x: x + 0.5,
+          y: y + 0.5,
+          vx: Math.cos(a) * v,
+          vy: Math.sin(a) * v,
+          life: 0.5 + Math.random() * 0.5,
+          c: i % 4,
+          drill: true,
+        });
+      }
+      return 'drillStone';
+    }
+  }
+
   const soft = cands.find(([x, y]) => inside(x, y) && s.grid[y][x] === SOFT);
   if (!soft) {
     const stone = cands.some(([x, y]) => s.grid[y]?.[x] === STONE);

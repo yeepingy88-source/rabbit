@@ -93,6 +93,47 @@ export function drawMaterial(ctx, x, y, type, ts, t) {
       );
       ctx.stroke();
     }
+  } else if (type === 'shard') {
+    // Deep Core Shard (地核碎屑): rare glowing crystal at dead ends
+    const p = 0.82 + 0.18 * Math.sin(t * 3.2);
+    const g = ctx.createRadialGradient(x, y, 0, x, y, ts * 0.5 * p);
+    g.addColorStop(0, 'rgba(255, 60, 110, 0.55)');
+    g.addColorStop(1, 'rgba(255, 60, 110, 0)');
+    ctx.fillStyle = g; circle(ctx, x, y, ts * 0.5 * p);
+
+    const cy = y + Math.sin(t * 2.8) * ts * 0.04;
+    ctx.save();
+    ctx.translate(x, cy);
+    // Outer glow diamond
+    ctx.fillStyle = '#ff1744';
+    ctx.beginPath();
+    ctx.moveTo(0, -ts * 0.22);
+    ctx.lineTo(ts * 0.16, 0);
+    ctx.lineTo(0, ts * 0.22);
+    ctx.lineTo(-ts * 0.16, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    // Top-left facet highlight
+    ctx.fillStyle = '#ff80ab';
+    ctx.beginPath();
+    ctx.moveTo(0, -ts * 0.22);
+    ctx.lineTo(ts * 0.16, 0);
+    ctx.lineTo(0, 0);
+    ctx.lineTo(-ts * 0.16, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    // Inner bright crystal facet
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.moveTo(0, -ts * 0.18);
+    ctx.lineTo(ts * 0.06, -ts * 0.04);
+    ctx.lineTo(0, 0);
+    ctx.lineTo(-ts * 0.06, -ts * 0.04);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
   } else {
     ctx.fillStyle = 'rgba(0,0,0,0.2)'; oval(ctx, x, y + ts * 0.1, ts * 0.26, ts * 0.1);
     ctx.fillStyle = '#9a7b5f'; oval(ctx, x, y, ts * 0.26, ts * 0.2);
@@ -102,12 +143,37 @@ export function drawMaterial(ctx, x, y, type, ts, t) {
   }
 }
 
-export function drawBunny(ctx, x, y, ts, facing, t, moving) {
+export function drawBunny(ctx, x, y, ts, facing, t, moving, drillActive = false) {
   const s = ts * 0.36, bob = moving ? Math.sin(t * 18) * 0.06 : 0;
   ctx.save(); ctx.translate(x, y);
   ctx.fillStyle = 'rgba(0,0,0,0.28)'; oval(ctx, 0, s * 0.25, s * 0.95, s * 1.05);
   ctx.rotate(Math.atan2(facing.y, facing.x) + Math.PI / 2);
   ctx.scale(1 + bob, 1 - bob);
+
+  // If Rock Breaker Drill is active: radiant energy aura
+  if (drillActive) {
+    const pulse = 1 + 0.15 * Math.sin(t * 6);
+    const dg = ctx.createRadialGradient(0, -s * 0.8, 0, 0, -s * 0.8, s * 1.2 * pulse);
+    dg.addColorStop(0, 'rgba(0, 240, 255, 0.6)');
+    dg.addColorStop(0.5, 'rgba(0, 180, 255, 0.25)');
+    dg.addColorStop(1, 'rgba(0, 180, 255, 0)');
+    ctx.fillStyle = dg;
+    circle(ctx, 0, -s * 0.8, s * 1.2 * pulse);
+
+    // Glowing diamond tip in front
+    ctx.fillStyle = '#00f0ff';
+    ctx.beginPath();
+    ctx.moveTo(0, -s * 1.6);
+    ctx.lineTo(s * 0.3, -s * 1.1);
+    ctx.lineTo(0, -s * 0.8);
+    ctx.lineTo(-s * 0.3, -s * 1.1);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#ffffff';
+    circle(ctx, 0, -s * 1.2, s * 0.1);
+  }
+
   ctx.fillStyle = '#ffffff'; circle(ctx, 0, s * 0.95, s * 0.3);
   ctx.fillStyle = '#fffaf2'; oval(ctx, 0, s * 0.25, s * 0.78, s * 0.9);
   ctx.fillStyle = '#a0643a'; circle(ctx, -s * 0.48, -s * 0.52, s * 0.2); circle(ctx, s * 0.48, -s * 0.52, s * 0.2);

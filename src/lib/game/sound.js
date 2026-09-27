@@ -27,6 +27,11 @@ export const sfx = {
   craftReady: () => seq([784, 1175], 100),
   click: () => tone(540, 0.06, 'triangle', 0.08),
   win: () => seq([523, 659, 784, 1047, 1319], 130),
+  shatter: () => {
+    tone(130, 0.35, 'sawtooth', 0.25, 40);
+    setTimeout(() => tone(240, 0.25, 'square', 0.15, 60), 60);
+    setTimeout(() => seq([880, 1175, 1760], 50, 'sine', 0.1), 120);
+  },
   tick: () => tone(880, 0.04, 'sine', 0.05),
 };
 

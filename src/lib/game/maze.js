@@ -1,4 +1,5 @@
 export const PATH = 0, SOFT = 1, STONE = 2, EXIT = 3;
+export const TILE = { PATH: 0, SOFT: 1, STONE: 2, WALL: 2, EXIT: 3 };
 const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 const shuffle = (a) => {
   for (let i = a.length - 1; i > 0; i--) {
@@ -108,11 +109,45 @@ export function createLevel(level) {
     }
   if (!landmark) landmark = { x: sx, y: sy, d: 0 };
 
+  // Detect dead ends (corridors with only 1 open direction)
+  const deadEnds = [];
+  for (let y = 1; y < H - 1; y++) {
+    for (let x = 1; x < W - 1; x++) {
+      if (grid[y][x] !== PATH) continue;
+      if ((x === sx && y === sy) || (x === ex && y === ey)) continue;
+      let openCount = 0;
+      for (const [dx, dy] of DIRS) {
+        const nx = x + dx, ny = y + dy;
+        if (nx >= 0 && ny >= 0 && nx < W && ny < H) {
+          if (grid[ny][nx] === PATH || grid[ny][nx] === EXIT) {
+            openCount++;
+          }
+        }
+      }
+      if (openCount === 1) {
+        deadEnds.push({ x, y, dist: dist[y][x] });
+      }
+    }
+  }
+  deadEnds.sort((a, b) => b.dist - a.dist);
+
+  // Rare Deep Core Shard: occasionally spawns at the end of deep dead ends
+  let shardSpot = null;
+  if (deadEnds.length > 0 && (Math.random() < 0.75 || level >= 2)) {
+    shardSpot = deadEnds[0];
+  }
+
   const spots = [];
   for (let y = 1; y < H - 1; y++)
     for (let x = 1; x < W - 1; x++) {
       const far = (p) => Math.abs(p.x - x) + Math.abs(p.y - y) > 3;
-      if (grid[y][x] === PATH && !(x === landmark.x && y === landmark.y) && far(start) && far(exit))
+      if (
+        grid[y][x] === PATH &&
+        !(x === landmark.x && y === landmark.y) &&
+        !(shardSpot && x === shardSpot.x && y === shardSpot.y) &&
+        far(start) &&
+        far(exit)
+      )
         spots.push([x, y]);
     }
   shuffle(spots);
@@ -125,9 +160,20 @@ export function createLevel(level) {
   const droplets = mk(3 + Math.floor(level / 2), 'water');
   const materials = [...mk(2 + tier, 'fiber'), ...mk(1 + tier, 'clay')];
 
+  if (shardSpot) {
+    materials.push({
+      x: shardSpot.x,
+      y: shardSpot.y,
+      type: 'shard',
+      ox: 0,
+      oy: 0,
+      taken: false,
+    });
+  }
+
   return {
     level, W, H, grid, start, exit, landmark, carrots, droplets, materials,
     x: start.x + 0.5, y: start.y + 0.5, facing: { x: 0, y: -1 },
-    stamina: 100, water: 0, freeDigs: 0, time: 0, digs: 0, particles: [], shake: 0, won: false, moving: false,
+    stamina: 100, water: 0, freeDigs: 0, drillActive: false, time: 0, digs: 0, particles: [], shake: 0, won: false, moving: false,
   };
 }
