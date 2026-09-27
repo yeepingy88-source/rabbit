@@ -8,9 +8,74 @@
     <meta name="description" content="An adventure maze game featuring a rabbit collecting carrots, digging treasures, crafting tools, and challenging the leaderboard." />
     <meta property="og:title" content="Rabbit Game" />
     <meta property="og:description" content="An adventure maze game featuring a rabbit collecting carrots, digging treasures, crafting tools, and challenging the leaderboard." />
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #1a0f08;
+        color: #fff4e0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      #root {
+        width: 100%;
+        height: 100%;
+        min-height: 100vh;
+      }
+      .initial-loader {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(180deg, #557c3e 0%, #3e2212 50%, #1a0f08 100%);
+        color: #fff4e0;
+        text-align: center;
+        padding: 20px;
+        z-index: 1;
+      }
+      .initial-spinner {
+        width: 44px;
+        height: 44px;
+        border: 4px solid rgba(255, 244, 224, 0.2);
+        border-top-color: #f7a45c;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin-bottom: 16px;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+    <script>
+      // Global error handler to catch any syntax or script failure before React mounts
+      window.addEventListener('error', function(event) {
+        var el = document.getElementById('global-script-error');
+        if (!el) {
+          el = document.createElement('div');
+          el.id = 'global-script-error';
+          el.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:999999;background:#200808;color:#ff9999;padding:24px;font-family:monospace;font-size:13px;overflow:auto;';
+          document.body ? document.body.appendChild(el) : document.documentElement.appendChild(el);
+        }
+        var msg = event.message || (event.error && event.error.message) || 'Script execution error';
+        var stack = (event.error && event.error.stack) ? ('\n' + event.error.stack) : '';
+        el.innerHTML = '<h3 style="color:#ff5555;margin-top:0">Script Error Detected:</h3><p><b>' + msg + '</b></p><pre style="background:#110404;padding:12px;border-radius:8px;overflow:auto;">' + (event.filename || '') + ':' + (event.lineno || '') + ':' + (event.colno || '') + stack + '</pre><button onclick="localStorage.clear();location.reload();" style="background:#ef4444;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:bold;cursor:pointer;">Clear Storage & Reload</button>';
+      });
+      window.addEventListener('unhandledrejection', function(event) {
+        console.error('Unhandled Promise Rejection:', event.reason);
+      });
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="initial-loader">
+        <div class="initial-spinner"></div>
+        <div style="font-weight: bold; font-size: 18px; margin-bottom: 6px;">兔兔穿土記 · 加載中...</div>
+        <div style="font-size: 13px; opacity: 0.7;">Bunny Underground Loading...</div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

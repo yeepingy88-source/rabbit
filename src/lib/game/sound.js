@@ -1,5 +1,8 @@
 let actx;
-let muted = localStorage.getItem('bunny_muted') === '1';
+let muted = false;
+try {
+  muted = typeof localStorage !== 'undefined' && localStorage.getItem('bunny_muted') === '1';
+} catch {}
 
 function tone(freq, dur, type = 'sine', vol = 0.12, slide) {
   if (muted) return;
@@ -45,5 +48,9 @@ export const sfx = {
 export const isMuted = () => muted;
 export function setMuted(m) {
   muted = m;
-  localStorage.setItem('bunny_muted', m ? '1' : '0');
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('bunny_muted', m ? '1' : '0');
+    }
+  } catch {}
 }

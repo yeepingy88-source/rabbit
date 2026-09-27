@@ -192,6 +192,19 @@ export function LangProvider({ children }) {
 
 export function useLang() {
   const ctx = useContext(LangContext);
-  if (!ctx) throw new Error('useLang must be used within LangProvider');
+  if (!ctx) {
+    console.warn('useLang was called outside LangProvider, returning fallback strings.');
+    return {
+      lang: 'zh',
+      setLang: () => {},
+      t: STRINGS.zh,
+      toggle: () => {},
+    };
+  }
   return ctx;
 }
+
+export const useI18n = useLang;
+export const I18nProvider = LangProvider;
+export { STRINGS };
+export default LangProvider;
