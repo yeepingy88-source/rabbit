@@ -1,17 +1,22 @@
 import React from 'react';
 import { Map as MapIcon, Volume2, VolumeX, Zap, Trophy } from 'lucide-react';
+import { useLang } from '@/lib/i18n';
 
 const panel = 'bg-[#2a1a10]/75 backdrop-blur-md border border-[#fff4e0]/10 shadow-[0_8px_24px_rgba(0,0,0,0.35)]';
 
 export default function TopBar({ level, levelName, stamina, freeViews, muted, onToggleMute, onOpenMap, onOpenLeaderboard }) {
+  const { t, lang, toggle } = useLang();
   return (
     <div className="absolute top-0 inset-x-0 p-3 sm:p-4 flex flex-col gap-2 pointer-events-none">
       <div className="flex items-center justify-between gap-2">
         <div className={`${panel} rounded-2xl px-4 py-2 pointer-events-auto`}>
-          <div className="text-[10px] tracking-[0.25em] text-[#f7a45c] font-semibold">第 {level} 關</div>
+          <div className="text-[10px] tracking-[0.25em] text-[#f7a45c] font-semibold">{t.level(level)}</div>
           <div className="text-[#fff4e0] font-bold text-base leading-tight">{levelName}</div>
         </div>
         <div className="flex items-center gap-2 pointer-events-auto">
+          <button onClick={toggle} className={`${panel} h-11 px-3 rounded-2xl flex items-center justify-center text-[#fff4e0] text-xs font-bold active:scale-90 transition`}>
+            {lang === 'zh' ? 'EN' : '中文'}
+          </button>
           <button onClick={onToggleMute} className={`${panel} w-11 h-11 rounded-2xl flex items-center justify-center text-[#fff4e0] active:scale-90 transition`}>
             {muted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
           </button>
@@ -31,10 +36,10 @@ export default function TopBar({ level, levelName, stamina, freeViews, muted, on
         <div className="flex-1 h-3 rounded-full bg-black/40 overflow-hidden">
           <div
             className="h-full rounded-full bg-gradient-to-r from-[#f08a3c] to-[#ffd166] transition-[width] duration-200"
-            style={{ width: `${stamina}%` }}
+            style={{ width: `${Math.max(0, Math.min(100, stamina))}%` }}
           />
         </div>
-        <span className="text-xs font-bold text-[#fff4e0] w-8 text-right tabular-nums">{stamina}</span>
+        <span className="text-xs font-bold text-[#fff4e0] w-8 text-right tabular-nums">{Math.round(stamina)}</span>
       </div>
     </div>
   );
