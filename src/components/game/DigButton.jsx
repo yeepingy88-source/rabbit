@@ -7,7 +7,7 @@ export default function DigButton({ onDig, stamina, drillActive = false }) {
   return (
     <button
       onPointerDown={(e) => { e.preventDefault(); onDig(); }}
-      className={`absolute bottom-10 left-7 w-24 h-24 rounded-full touch-none flex flex-col items-center justify-center gap-0.5 border-4 transition-all duration-200 active:scale-90 shadow-[0_10px_30px_rgba(0,0,0,0.45)] ${
+      className={`absolute bottom-9 right-7 sm:right-10 w-24 h-24 rounded-full touch-none flex flex-col items-center justify-center gap-0.5 border-4 transition-all duration-200 active:scale-90 shadow-[0_10px_30px_rgba(0,0,0,0.45)] z-20 ${
         drillActive
           ? 'bg-gradient-to-b from-[#06b6d4] to-[#0369a1] border-[#67e8f9] text-white shadow-[0_0_25px_rgba(6,182,212,0.6)] animate-pulse'
           : ready

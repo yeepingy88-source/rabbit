@@ -116,7 +116,7 @@ export default function VictoryScreen({ level, result, onNext, onReplay, onResta
       {/* Level Stats */}
       <div className="mt-5 grid grid-cols-4 gap-2 w-full max-w-sm">
         {stats.map(([k, v]) => (
-          <div key={k} className="rounded-2xl bg-white/80 backdrop-blur-xs py-3.5 shadow-sm border border-[#e5cfac]/40">
+          <div key={k} className="rounded-2xl bg-white/80 backdrop-blur-sm py-3.5 shadow-sm border border-[#e5cfac]/40">
             <div className="text-xl sm:text-2xl font-black text-[#4a2c18] tabular-nums">{v}</div>
             <div className="text-xs text-[#a0643a] font-semibold mt-0.5">{k}</div>
           </div>

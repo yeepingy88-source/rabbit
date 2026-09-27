@@ -21,6 +21,15 @@ export function drawMiniMap(ctx, s, w, h, t) {
   const cx = (x) => ox + (x + 0.5) * ts, cy = (y) => oy + (y + 0.5) * ts;
   ctx.fillStyle = '#5a331b'; circle(ctx, cx(s.start.x), cy(s.start.y), ts * 0.45);
   ctx.strokeStyle = '#fff4e0'; ctx.lineWidth = ts * 0.12; ctx.stroke();
+  s.droplets.forEach((d) => { if (!d.taken) { ctx.fillStyle = '#4db2ff'; circle(ctx, cx(d.x), cy(d.y), ts * 0.16); } });
+  s.materials
+    .filter((m) => m.type === 'shard' && !m.taken)
+    .forEach((m) => {
+      ctx.fillStyle = '#ff1744';
+      circle(ctx, cx(m.x), cy(m.y), ts * 0.28);
+      ctx.fillStyle = '#ffffff';
+      circle(ctx, cx(m.x), cy(m.y), ts * 0.1);
+    });
   s.carrots.forEach((c) => { if (!c.taken) { ctx.fillStyle = '#f08a3c'; circle(ctx, cx(c.x), cy(c.y), ts * 0.2); } });
   drawCarrot(ctx, cx(s.exit.x), cy(s.exit.y) + ts * 0.2, ts * 1.5, 0, t);
 

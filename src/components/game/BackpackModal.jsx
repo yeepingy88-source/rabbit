@@ -268,7 +268,7 @@ export default function BackpackModal({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 mb-0.5">
                     <span
-                      className={`text-[9px] font-black px-1.5 py-0.2 rounded border ${r.tagColor}`}
+                      className={`text-[9px] font-black px-1.5 py-0.5 rounded border ${r.tagColor}`}
                     >
                       {r.tag}
                     </span>

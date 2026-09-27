@@ -19,9 +19,21 @@ function drawSoft(ctx, px, py, ts, x, y) {
   ctx.fillStyle = '#7a4e30';
   ctx.fillRect(px, py, ts + 1, ts + 1);
   ctx.fillStyle = '#b37d4b';
-  ctx.beginPath(); ctx.roundRect(px + ts * 0.05, py + ts * 0.05, ts * 0.9, ts * 0.9, ts * 0.22); ctx.fill();
+  ctx.beginPath();
+  if (typeof ctx.roundRect === 'function') {
+    ctx.roundRect(px + ts * 0.05, py + ts * 0.05, ts * 0.9, ts * 0.9, ts * 0.22);
+  } else {
+    ctx.rect(px + ts * 0.05, py + ts * 0.05, ts * 0.9, ts * 0.9);
+  }
+  ctx.fill();
   ctx.fillStyle = '#c99461';
-  ctx.beginPath(); ctx.roundRect(px + ts * 0.12, py + ts * 0.1, ts * 0.76, ts * 0.55, ts * 0.2); ctx.fill();
+  ctx.beginPath();
+  if (typeof ctx.roundRect === 'function') {
+    ctx.roundRect(px + ts * 0.12, py + ts * 0.1, ts * 0.76, ts * 0.55, ts * 0.2);
+  } else {
+    ctx.rect(px + ts * 0.12, py + ts * 0.1, ts * 0.76, ts * 0.55);
+  }
+  ctx.fill();
   ctx.fillStyle = '#dcae7a';
   for (let i = 0; i < 5; i++) dot(ctx, px + ts * (0.2 + bits(h, i * 5, 15) * 0.6), py + ts * (0.2 + bits(h, i * 5 + 2, 15) * 0.6), ts * 0.035);
   const f = h & 1 ? 1 : -1;

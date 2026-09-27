@@ -1,25 +1,29 @@
 import { useEffect, useRef } from 'react';
 
-const CODE_MAP = {
-  ArrowUp: [0, -1],
-  KeyW: [0, -1],
-  ArrowDown: [0, 1],
-  KeyS: [0, 1],
-  ArrowLeft: [-1, 0],
-  KeyA: [-1, 0],
-  ArrowRight: [1, 0],
-  KeyD: [1, 0],
+const KEY_ACTIONS = {
+  KeyW: 'UP',
+  ArrowUp: 'UP',
+  w: 'UP',
+  W: 'UP',
+  KeyS: 'DOWN',
+  ArrowDown: 'DOWN',
+  s: 'DOWN',
+  S: 'DOWN',
+  KeyA: 'LEFT',
+  ArrowLeft: 'LEFT',
+  a: 'LEFT',
+  A: 'LEFT',
+  KeyD: 'RIGHT',
+  ArrowRight: 'RIGHT',
+  d: 'RIGHT',
+  D: 'RIGHT',
 };
 
-const KEY_MAP = {
-  w: [0, -1],
-  s: [0, 1],
-  a: [-1, 0],
-  d: [1, 0],
-  arrowup: [0, -1],
-  arrowdown: [0, 1],
-  arrowleft: [-1, 0],
-  arrowright: [1, 0],
+const DIRS = {
+  UP: [0, -1],
+  DOWN: [0, 1],
+  LEFT: [-1, 0],
+  RIGHT: [1, 0],
 };
 
 export default function useKeyboard(inputRef, onDig) {
@@ -27,25 +31,27 @@ export default function useKeyboard(inputRef, onDig) {
   digRef.current = onDig;
 
   useEffect(() => {
-    const keys = new Set();
+    const activeActions = new Set();
 
     const apply = () => {
       let x = 0, y = 0;
-      keys.forEach((dir) => {
-        x += dir[0];
-        y += dir[1];
-      });
-      x = Math.sign(x);
-      y = Math.sign(y);
+      if (activeActions.has('UP')) y -= 1;
+      if (activeActions.has('DOWN')) y += 1;
+      if (activeActions.has('LEFT')) x -= 1;
+      if (activeActions.has('RIGHT')) x += 1;
+
+      if (x === 0 && y === 0) {
+        inputRef.current = { x: 0, y: 0 };
+        return;
+      }
       const l = Math.hypot(x, y) || 1;
       inputRef.current = { x: x / l, y: y / l };
     };
 
-    const getDir = (e) => CODE_MAP[e.code] || KEY_MAP[e.key?.toLowerCase()];
-
     const isSpace = (e) => e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar';
 
     const down = (e) => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
       if (isSpace(e)) {
         e.preventDefault();
         if (!e.repeat) {
@@ -53,10 +59,10 @@ export default function useKeyboard(inputRef, onDig) {
         }
         return;
       }
-      const dir = getDir(e);
-      if (dir) {
+      const action = KEY_ACTIONS[e.code] || KEY_ACTIONS[e.key];
+      if (action) {
         e.preventDefault();
-        keys.add(dir);
+        activeActions.add(action);
         apply();
       }
     };
@@ -66,26 +72,27 @@ export default function useKeyboard(inputRef, onDig) {
         e.preventDefault();
         return;
       }
-      const dir = getDir(e);
-      if (dir) {
-        keys.delete(dir);
+      const action = KEY_ACTIONS[e.code] || KEY_ACTIONS[e.key];
+      if (action) {
+        activeActions.delete(action);
         apply();
       }
     };
 
-    const blur = () => {
-      keys.clear();
+    const reset = () => {
+      activeActions.clear();
       inputRef.current = { x: 0, y: 0 };
     };
 
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
-    window.addEventListener('blur', blur);
+    window.addEventListener('blur', reset);
 
     return () => {
       window.removeEventListener('keydown', down);
       window.removeEventListener('keyup', up);
-      window.removeEventListener('blur', blur);
+      window.removeEventListener('blur', reset);
     };
   }, [inputRef]);
 }
+

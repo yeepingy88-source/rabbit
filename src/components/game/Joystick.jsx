@@ -25,7 +25,7 @@ export default function Joystick({ inputRef }) {
   return (
     <div
       ref={baseRef}
-      className="absolute bottom-7 right-6 w-36 h-36 rounded-full touch-none bg-[#2a1a10]/70 backdrop-blur-md border border-[#fff4e0]/15 shadow-[0_10px_30px_rgba(0,0,0,0.45)]"
+      className="absolute bottom-7 left-6 sm:left-10 w-36 h-36 rounded-full touch-none bg-[#2a1a10]/70 backdrop-blur-md border border-[#fff4e0]/15 shadow-[0_10px_30px_rgba(0,0,0,0.45)] z-20"
       onPointerDown={(e) => { active.current = true; e.currentTarget.setPointerCapture(e.pointerId); update(e); }}
       onPointerMove={(e) => active.current && update(e)}
       onPointerUp={end}

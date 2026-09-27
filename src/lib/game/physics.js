@@ -103,6 +103,12 @@ export function dig(s) {
         });
       }
       return 'drillStone';
+    } else {
+      const outerStone = cands.some(([x, y]) => !inside(x, y) && s.grid[y]?.[x] === STONE);
+      if (outerStone) {
+        s.shake = 0.15;
+        return 'borderWall';
+      }
     }
   }
 

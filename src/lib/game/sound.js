@@ -3,15 +3,22 @@ let muted = localStorage.getItem('bunny_muted') === '1';
 
 function tone(freq, dur, type = 'sine', vol = 0.12, slide) {
   if (muted) return;
-  actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-  const now = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
-  o.type = type;
-  o.frequency.setValueAtTime(freq, now);
-  if (slide) o.frequency.exponentialRampToValueAtTime(slide, now + dur);
-  g.gain.setValueAtTime(vol, now);
-  g.gain.exponentialRampToValueAtTime(0.001, now + dur);
-  o.connect(g).connect(actx.destination);
-  o.start(now); o.stop(now + dur);
+  try {
+    if (!actx) {
+      actx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (actx.state === 'suspended') {
+      actx.resume().catch(() => {});
+    }
+    const now = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, now);
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, now + dur);
+    g.gain.setValueAtTime(vol, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    o.connect(g).connect(actx.destination);
+    o.start(now); o.stop(now + dur);
+  } catch {}
 }
 
 const seq = (notes, gap, type = 'square', vol = 0.07) =>

@@ -15,7 +15,10 @@ export default function MapOverlay({ stateRef, mode, onClose }) {
     let raf;
     const loop = (now) => {
       const dpr = window.devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight;
-      if (c.width !== Math.round(w * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+      if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) {
+        c.width = Math.round(w * dpr);
+        c.height = Math.round(h * dpr);
+      }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       drawMiniMap(ctx, stateRef.current, w, h, now / 1000);
       raf = requestAnimationFrame(loop);

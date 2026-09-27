@@ -9,15 +9,22 @@ export default function GameCanvas({ stateRef, inputRef, pausedRef, onStamina, o
   cb.current = { onStamina, onWin, onCollect };
 
   useEffect(() => {
-    const c = canvasRef.current, ctx = c.getContext('2d'), fog = document.createElement('canvas');
+    const c = canvasRef.current;
+    if (!c) return;
+    const ctx = c.getContext('2d');
+    if (!ctx) return;
+    const fog = document.createElement('canvas');
     let raf, last = performance.now(), lastSt = -1;
     const loop = (now) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       const s = stateRef.current;
-      const dpr = window.devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight;
+      const dpr = window.devicePixelRatio || 1;
+      const w = c.clientWidth || 300;
+      const h = c.clientHeight || 300;
       if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) {
-        c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+        c.width = Math.round(w * dpr);
+        c.height = Math.round(h * dpr);
       }
       if (s) {
         if (!pausedRef.current) {

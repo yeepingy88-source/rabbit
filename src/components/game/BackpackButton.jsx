@@ -5,7 +5,7 @@ export default function BackpackButton({ badge, highlight, onOpen }) {
   return (
     <button
       onClick={onOpen}
-      className={`absolute bottom-44 left-9 w-12 h-12 rounded-2xl bg-[#2a1a10]/70 backdrop-blur-md border flex items-center justify-center text-[#fff4e0] active:scale-90 transition shadow-[0_8px_20px_rgba(0,0,0,0.4)] ${highlight ? 'border-[#ffd166] animate-bounce' : 'border-[#fff4e0]/15'}`}
+      className={`absolute bottom-[9.5rem] right-9 sm:right-12 w-12 h-12 rounded-2xl bg-[#2a1a10]/70 backdrop-blur-md border flex items-center justify-center text-[#fff4e0] active:scale-90 transition shadow-[0_8px_20px_rgba(0,0,0,0.4)] z-20 ${highlight ? 'border-[#ffd166] animate-bounce' : 'border-[#fff4e0]/15'}`}
     >
       <Backpack className="w-5 h-5" />
       {badge > 0 && (

@@ -16,7 +16,17 @@ export default function AdPlayer({ type, onDone }) {
   return (
     <div className="absolute inset-0 z-40 bg-[#0d0703] flex flex-col items-center justify-center p-6 text-[#fff4e0]">
       <div className="absolute top-4 left-4 text-[10px] tracking-[0.3em] px-2 py-1 rounded bg-white/10">模擬廣告</div>
-      <div className="absolute top-4 right-4 px-3 py-1.5 rounded-full bg-white/10 text-sm font-bold tabular-nums">{Math.max(0, left)} 秒</div>
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <span className="px-3 py-1.5 rounded-full bg-white/10 text-sm font-bold tabular-nums">
+          {Math.max(0, left)} 秒
+        </span>
+        <button
+          onClick={onDone}
+          className="px-3 py-1.5 rounded-full bg-white/20 text-xs font-bold hover:bg-white/30 active:scale-95 transition"
+        >
+          跳過
+        </button>
+      </div>
       <motion.div animate={{ rotate: [0, -8, 8, 0], y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 2 }}
         className="w-28 h-28 rounded-[32px] bg-gradient-to-br from-[#f7a45c] to-[#e0702a] flex items-center justify-center shadow-[0_20px_60px_rgba(240,138,60,0.4)]">
         <Carrot className="w-14 h-14 text-white" strokeWidth={2} />

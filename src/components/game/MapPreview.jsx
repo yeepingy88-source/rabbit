@@ -43,7 +43,13 @@ export default function MapPreview({ stateRef, onDone }) {
         mk.font = `bold ${Math.max(11, Math.round(ts * 0.65))}px 'Noto Sans TC', sans-serif`;
         const tw = mk.measureText(text).width;
         mk.fillStyle = 'rgba(74,44,24,0.85)';
-        mk.beginPath(); mk.roundRect(x - tw / 2 - 7, y, tw + 14, 20, 10); mk.fill();
+        mk.beginPath();
+        if (typeof mk.roundRect === 'function') {
+          mk.roundRect(x - tw / 2 - 7, y, tw + 14, 20, 10);
+        } else {
+          mk.rect(x - tw / 2 - 7, y, tw + 14, 20);
+        }
+        mk.fill();
         mk.fillStyle = '#fff4e0'; mk.textAlign = 'center'; mk.fillText(text, x, y + 14);
       };
 
@@ -94,7 +100,7 @@ export default function MapPreview({ stateRef, onDone }) {
         <canvas ref={mapRef} className="absolute inset-0 w-full h-full" style={{ filter: 'blur(6px)' }} />
         <canvas ref={markRef} className="absolute inset-0 w-full h-full" />
       </div>
-      <div className="h-24 shrink-0 flex items-center justify-center">
+      <div className="h-24 shrink-0 flex items-center justify-center relative">
         <AnimatePresence mode="wait">
           <motion.div
             key={count}
@@ -106,6 +112,12 @@ export default function MapPreview({ stateRef, onDone }) {
             {count > 0 ? count : t.go}
           </motion.div>
         </AnimatePresence>
+        <button
+          onClick={() => onDone()}
+          className="absolute right-4 px-4 py-2 rounded-full bg-[#5a331b] text-[#fff4e0] text-xs font-bold shadow active:scale-95 transition hover:bg-[#6b3e21]"
+        >
+          {t.go}
+        </button>
       </div>
     </motion.div>
   );

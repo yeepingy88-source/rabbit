@@ -168,6 +168,9 @@ export default function Game() {
       sfx.shatter();
       setDrillArmed(false);
       setHint(flash(t.drillShatter));
+    } else if (r === 'borderWall') {
+      sfx.thud();
+      setHint(flash(t.borderWall));
     } else if (r === 'dug') {
       sfx.dig();
       if (stateRef.current && !stateRef.current.drillActive) {
@@ -191,6 +194,8 @@ export default function Game() {
       if (type === 'water') {
         setInv((p) => ({ ...p, water: (p.water || 0) + 1 }));
         setHint(flash(t.gotWater));
+      } else if (type === 'pickup') {
+        setHint(flash(t.gotCarrot));
       } else if (type === 'fiber') {
         setInv((p) => ({ ...p, fiber: (p.fiber || 0) + 1 }));
         setHint(flash(t.gotFiber));
@@ -262,19 +267,38 @@ export default function Game() {
 
   const handleUse = (item) => {
     if ((inv[item] || 0) < 1) return;
-    setInv((p) => ({ ...p, [item]: p[item] - 1 }));
 
     if (item === 'brew') {
+      const currentStamina = stateRef.current ? stateRef.current.stamina : stamina;
+      if (currentStamina >= 100) {
+        setHint(flash(t.brewAlreadyFull));
+        return;
+      }
+      setInv((p) => ({ ...p, [item]: p[item] - 1 }));
       if (stateRef.current) stateRef.current.stamina = 100;
       setStamina(100);
       setHint(flash(t.brewFull));
       sfx.pickup();
-    } else if (item === 'drill') {
+      return;
+    }
+
+    if (item === 'drill') {
+      if (stateRef.current?.drillActive || drillArmed) {
+        setHint(flash(t.drillAlreadyActive));
+        return;
+      }
+      setInv((p) => ({ ...p, [item]: p[item] - 1 }));
       if (stateRef.current) stateRef.current.drillActive = true;
       setDrillArmed(true);
       setHint(flash(t.drillReady));
       sfx.pickup();
-    } else if (item === 'claws') {
+      setShowBag(false);
+      return;
+    }
+
+    setInv((p) => ({ ...p, [item]: p[item] - 1 }));
+
+    if (item === 'claws') {
       if (stateRef.current) stateRef.current.freeDigs = 3;
       setHint(flash(t.clawsReady));
       sfx.pickup();
@@ -356,7 +380,7 @@ export default function Game() {
           />
 
           {/* Desktop Keyboard Controls Keyhint */}
-          <div className="hidden sm:flex items-center gap-2 pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 px-3.5 py-1 rounded-full bg-[#120a05]/75 backdrop-blur-xs text-[11px] font-semibold text-[#ffd199]/90 border border-[#ffd199]/25 shadow-lg z-20">
+          <div className="hidden sm:flex items-center gap-2 pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 px-3.5 py-1 rounded-full bg-[#120a05]/75 backdrop-blur-sm text-[11px] font-semibold text-[#ffd199]/90 border border-[#ffd199]/25 shadow-lg z-20">
             <span>{t.desktopHint}</span>
           </div>
 
