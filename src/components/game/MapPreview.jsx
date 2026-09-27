@@ -3,8 +3,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { drawMiniMap } from '@/lib/game/minimap';
 import { drawCarrot, drawBurrow, drawRoots } from '@/lib/game/characters';
 import { sfx } from '@/lib/game/sound';
+import { useLang } from '@/lib/i18n';
 
 export default function MapPreview({ stateRef, onDone }) {
+  const { t } = useLang();
   const mapRef = useRef(null);
   const markRef = useRef(null);
   const [count, setCount] = useState(3);
@@ -47,32 +49,32 @@ export default function MapPreview({ stateRef, onDone }) {
 
       halo(cx(s.start.x), cy(s.start.y));
       drawBurrow(mk, cx(s.start.x), cy(s.start.y), ts * 1.6);
-      label(cx(s.start.x), cy(s.start.y) - ts * 1.6, '起點洞穴');
+      label(cx(s.start.x), cy(s.start.y) - ts * 1.6, t.startCave);
 
       halo(cx(s.exit.x), cy(s.exit.y) + ts * 0.3);
       drawCarrot(mk, cx(s.exit.x), cy(s.exit.y) + ts * 0.3, ts * 2.4, 0, 0);
-      label(cx(s.exit.x), cy(s.exit.y) + ts * 1.4, '巨型蘿蔔');
+      label(cx(s.exit.x), cy(s.exit.y) + ts * 1.4, t.giantCarrot);
 
       halo(cx(s.landmark.x), cy(s.landmark.y));
       drawRoots(mk, cx(s.landmark.x), cy(s.landmark.y), ts * 1.5);
-      label(cx(s.landmark.x), cy(s.landmark.y) + ts * 1.1, '古樹巨根');
+      label(cx(s.landmark.x), cy(s.landmark.y) + ts * 1.1, t.ancientRoot);
     };
     draw();
     window.addEventListener('resize', draw);
     return () => window.removeEventListener('resize', draw);
-  }, [stateRef]);
+  }, [stateRef, t]);
 
   useEffect(() => {
     if (count <= 0) return;
     sfx.tick();
-    const t = setTimeout(() => setCount((c) => c - 1), 900);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setCount((c) => c - 1), 900);
+    return () => clearTimeout(timer);
   }, [count]);
 
   useEffect(() => {
     if (count !== 0) return;
-    const t = setTimeout(() => setLeaving(true), 450);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setLeaving(true), 450);
+    return () => clearTimeout(timer);
   }, [count]);
 
   return (
@@ -84,9 +86,9 @@ export default function MapPreview({ stateRef, onDone }) {
       onAnimationComplete={() => leaving && onDone()}
     >
       <div className="text-center shrink-0">
-        <div className="text-[10px] tracking-[0.4em] text-[#8a6a50] font-semibold">LEVEL {stateRef.current?.level}</div>
-        <h2 className="text-2xl font-bold text-[#4a2c18]">古老藏寶圖</h2>
-        <p className="text-xs text-[#8a6a50] mt-1">路線已被歲月模糊⋯⋯認清方向，準備出發！</p>
+        <div className="text-[10px] tracking-[0.4em] text-[#8a6a50] font-semibold">{t.level(stateRef.current?.level || 1)}</div>
+        <h2 className="text-2xl font-bold text-[#4a2c18]">{t.previewTitle}</h2>
+        <p className="text-xs text-[#8a6a50] mt-1">{t.previewHint}</p>
       </div>
       <div className="relative flex-1 min-h-0 w-full max-w-lg mx-auto my-3 rounded-3xl border-4 border-dashed border-[#a0643a]/50 overflow-hidden">
         <canvas ref={mapRef} className="absolute inset-0 w-full h-full" style={{ filter: 'blur(6px)' }} />
@@ -101,7 +103,7 @@ export default function MapPreview({ stateRef, onDone }) {
             exit={{ scale: 0.4, opacity: 0 }}
             className="text-7xl font-bold text-[#5a331b]"
           >
-            {count > 0 ? count : '出發！'}
+            {count > 0 ? count : t.go}
           </motion.div>
         </AnimatePresence>
       </div>
