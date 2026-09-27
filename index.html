@@ -1,14 +1,77 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="https://base44.com/logo_v2.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Rabbit Game</title>
-    <link rel="stylesheet" crossorigin href="./assets/index-CNI0oZBG.css">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="./assets/loader.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rabbit Game</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(160deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+      color: #f8fafc;
+      padding: 1.5rem;
+    }
+    .card {
+      max-width: 420px;
+      width: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid #475569;
+      border-radius: 1rem;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,.35);
+    }
+    h1 { font-size: 1.75rem; margin-bottom: .5rem; }
+    p { color: #94a3b8; line-height: 1.5; margin-bottom: 1rem; font-size: .95rem; }
+    a {
+      display: inline-block;
+      margin-top: .5rem;
+      padding: .65rem 1.25rem;
+      background: #22c55e;
+      color: #052e16;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: .5rem;
+    }
+    a:hover { background: #4ade80; }
+    code {
+      display: block;
+      text-align: left;
+      background: #020617;
+      color: #e2e8f0;
+      padding: .75rem 1rem;
+      border-radius: .5rem;
+      font-size: .8rem;
+      margin: 1rem 0;
+      overflow-x: auto;
+    }
+    .ok { color: #4ade80; font-size: .85rem; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🐰 Rabbit Game</h1>
+    <p>The game build is ready. One setting is still needed so GitHub serves the real app instead of a blank page.</p>
+    <code>Repo → Settings → Pages<br>→ Build and deployment → Source<br>→ <strong>GitHub Actions</strong></code>
+    <p>Then open the Actions tab, open the latest green run, and wait ~1 minute.</p>
+    <a href="https://github.com/yeepingy88-source/rabbit/settings/pages" target="_blank" rel="noopener">Open Pages settings</a>
+    <p class="ok">After that, refresh this page — the full game will load here.</p>
+  </div>
+  <script>
+    // If Actions deployment is already active, try loading the built app
+    (async () => {
+      try {
+        const r = await fetch('./assets/index-CuJNC3Jz.js', { method: 'HEAD' });
+        if (r.ok) {
+          location.replace('./' + '?v=' + Date.now());
+        }
+      } catch (e) {}
+    })();
+  </script>
+</body>
 </html>
