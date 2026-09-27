@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Map as MapIcon, Volume2, VolumeX, Zap, Trophy, RotateCcw } from 'lucide-react';
+import { Home, Layers, Map as MapIcon, Volume2, VolumeX, Zap, Trophy, RotateCcw } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
 
 const panel = 'bg-[#2a1a10]/75 backdrop-blur-md border border-[#fff4e0]/10 shadow-[0_8px_24px_rgba(0,0,0,0.35)]';
@@ -15,6 +15,7 @@ export default function TopBar({
   onOpenLeaderboard,
   onRestartLevel,
   onGoHome,
+  onOpenLevelSelect,
 }) {
   const { t, lang, toggle } = useLang();
   return (
@@ -27,6 +28,13 @@ export default function TopBar({
             title={t.home}
           >
             <Home className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
+          <button
+            onClick={onOpenLevelSelect}
+            className={`${panel} w-9 sm:w-11 h-9 sm:h-11 rounded-2xl flex items-center justify-center text-[#ffd166] active:scale-90 transition hover:bg-[#3d2517]`}
+            title={t.selectLevel}
+          >
+            <Layers className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <div className={`${panel} rounded-2xl px-2.5 sm:px-4 py-1.5 sm:py-2 shrink-0 max-w-[120px] sm:max-w-none`}>
             <div className="text-[9px] sm:text-[10px] tracking-[0.2em] text-[#f7a45c] font-semibold truncate">{t.level(level)}</div>
@@ -46,11 +54,8 @@ export default function TopBar({
           <button onClick={onOpenLeaderboard} className={`${panel} w-9 sm:w-11 h-9 sm:h-11 rounded-2xl flex items-center justify-center text-[#ffd166] active:scale-90 transition`} title="Leaderboard">
             <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
-          <button onClick={onOpenMap} className={`${panel} relative w-10 sm:w-12 h-9 sm:h-11 rounded-2xl flex items-center justify-center text-[#fff4e0] active:scale-90 transition`} title="Map">
+          <button onClick={onOpenMap} className={`${panel} relative w-10 sm:w-12 h-9 sm:h-11 rounded-2xl flex items-center justify-center text-[#fff4e0] active:scale-90 transition hover:bg-[#3d2517]`} title={t.map || "Map"}>
             <MapIcon className="w-4 h-4 sm:w-6 sm:h-6" />
-            <span className={`absolute -top-1 -right-1 min-w-[18px] sm:min-w-[22px] h-[18px] sm:h-[22px] px-1 rounded-full text-[9px] sm:text-[11px] font-bold flex items-center justify-center border-2 border-[#2a1a10] ${freeViews > 0 ? 'bg-[#7fb35a] text-white' : 'bg-[#f08a3c] text-white'}`}>
-              {freeViews > 0 ? freeViews : 'AD'}
-            </span>
           </button>
         </div>
       </div>

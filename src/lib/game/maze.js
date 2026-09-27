@@ -36,15 +36,17 @@ function bfsDist(grid, W, H, sx, sy) {
  */
 export function createLevel(level) {
   // Sizing by level tier:
-  // Levels 1-5: 9x9 (Compact burrow)
-  // Levels 6-10: 15x15 (Deep winding cavern)
-  // Levels 11-15: 19x19 (Vast subterranean labyrinth)
-  // Levels 16-20: 23x23 (Epic mega abyss finale)
-  let dim = 9;
-  if (level >= 16) dim = 23;
-  else if (level >= 11) dim = 19;
-  else if (level >= 6) dim = 15;
-  else dim = 9;
+  // Levels 1-5: 15x15 (Spacious starting cavern, ample branches)
+  // Levels 6-10: 21x21 (Deep winding labyrinth)
+  // Levels 11-15: 27x27 (Vast subterranean network)
+  // Levels 16-20: 33x33 (Epic mega abyss)
+  // Levels 21+ (Endless): 35x35+
+  let dim = 15;
+  if (level >= 21) dim = Math.min(35 + Math.floor((level - 21) / 5) * 2, 45);
+  else if (level >= 16) dim = 33;
+  else if (level >= 11) dim = 27;
+  else if (level >= 6) dim = 21;
+  else dim = 15;
 
   const W = dim, H = dim;
   const cw = (W - 1) / 2;
@@ -209,7 +211,7 @@ export function createLevel(level) {
   const spots = [];
   for (let y = 1; y < H - 1; y++) {
     for (let x = 1; x < W - 1; x++) {
-      const farThreshold = W <= 9 ? 2 : 3;
+      const farThreshold = W <= 15 ? 3 : 4;
       const far = (p) => Math.abs(p.x - x) + Math.abs(p.y - y) >= farThreshold;
       if (
         grid[y][x] === PATH &&

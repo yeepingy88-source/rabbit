@@ -1,11 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Carrot, RotateCcw, Sparkles, Star, Trophy, Crown, Zap, Home } from 'lucide-react';
+import { ArrowRight, Carrot, RotateCcw, Sparkles, Star, Trophy, Crown, Zap, Home, MapPin } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
 
 const fmt = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
 
-export default function VictoryScreen({ level, result, onNext, onReplay, onRestartGame, onGoHome }) {
+export default function VictoryScreen({ level, result, onNext, onReplay, onRestartGame, onGoHome, onOpenLevelSelect }) {
   const { t } = useLang();
   const isFinal = level >= 20;
 
@@ -124,28 +124,38 @@ export default function VictoryScreen({ level, result, onNext, onReplay, onResta
       </div>
 
       {/* Action Buttons */}
-      <div className="mt-8 flex flex-col gap-2.5 w-full max-w-sm">
+      <div className="mt-8 flex flex-col gap-3 w-full max-w-sm">
+        <button
+          onClick={onNext}
+          className="w-full flex items-center justify-center gap-2.5 py-4 px-6 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-lg shadow-lg ring-2 ring-orange-300/50 active:scale-95 transition hover:brightness-105"
+        >
+          <span>{t.next}</span> <ArrowRight className="w-5 h-5" strokeWidth={2.8} />
+        </button>
+
         <div className="flex gap-2.5 w-full">
           <button
             onClick={onReplay}
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 px-3 rounded-full bg-white/95 text-[#5a331b] font-bold text-sm shadow active:scale-95 transition hover:bg-white"
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-white/95 text-[#5a331b] font-bold text-base shadow active:scale-95 transition hover:bg-white border border-[#5a331b]/15"
           >
             <RotateCcw className="w-4 h-4" /> <span>{level === 20 ? t.replayFinal : t.replay}</span>
           </button>
-          <button
-            onClick={onNext}
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 px-3 rounded-full bg-gradient-to-b from-[#f7a45c] to-[#e0702a] text-white font-extrabold text-sm shadow-lg active:scale-95 transition hover:brightness-105"
-          >
-            <span>{t.next}</span> <ArrowRight className="w-4 h-4" />
-          </button>
+          {onOpenLevelSelect && (
+            <button
+              onClick={onOpenLevelSelect}
+              className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-[#FFF8EB] border-2 border-[#ea580c]/30 text-[#9a3412] font-extrabold text-base shadow active:scale-95 transition hover:bg-white"
+            >
+              <MapPin className="w-4 h-4 text-[#ea580c]" />
+              <span>{t.selectLevel}</span>
+            </button>
+          )}
         </div>
 
         <button
           onClick={onGoHome || onRestartGame}
-          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-full bg-[#5a331b]/10 border border-[#5a331b]/20 text-[#5a331b] font-bold text-sm active:scale-95 transition hover:bg-[#5a331b]/20"
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-black/5 hover:bg-black/10 text-[#5a331b]/80 font-semibold text-sm active:scale-95 transition"
         >
           <Home className="w-4 h-4" />
-          <span>{t.homeButton}</span>
+          <span>{t.home}</span>
         </button>
       </div>
     </motion.div>

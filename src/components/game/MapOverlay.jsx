@@ -4,11 +4,10 @@ import { X } from 'lucide-react';
 import { drawMiniMap } from '@/lib/game/minimap';
 import MapLegend from './MapLegend';
 
-const LABELS = { free: '免費查看', quick: '快速偷看', full: '完整研究' };
+const LABELS = { free: '測試全圖檢視（無限制）', quick: '測試全圖檢視（無限制）', full: '測試完整地圖（無限次數）' };
 
 export default function MapOverlay({ stateRef, mode, onClose }) {
   const canvasRef = useRef(null);
-  const [left, setLeft] = useState(8);
 
   useEffect(() => {
     const c = canvasRef.current, ctx = c.getContext('2d');
@@ -27,35 +26,46 @@ export default function MapOverlay({ stateRef, mode, onClose }) {
     return () => cancelAnimationFrame(raf);
   }, [stateRef]);
 
-  useEffect(() => {
-    if (mode !== 'quick') return;
-    const id = setInterval(() => setLeft((l) => l - 1), 1000);
-    return () => clearInterval(id);
-  }, [mode]);
-
-  useEffect(() => { if (mode === 'quick' && left <= 0) onClose(); }, [left, mode, onClose]);
-
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="absolute inset-0 z-30 bg-[#120a05]/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="absolute inset-0 z-30 bg-[#120a05]/85 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 select-none"
+    >
       <motion.div
-        initial={{ scale: 0.92, y: 20 }} animate={{ scale: 1, y: 0 }} transition={{ type: 'spring', damping: 22 }}
+        initial={{ scale: 0.92, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        transition={{ type: 'spring', damping: 22 }}
+        onClick={(e) => e.stopPropagation()}
         className="w-full max-w-lg h-full max-h-[760px] flex flex-col rounded-[28px] bg-[#f6e7c8] border-4 border-[#c99461] shadow-2xl overflow-hidden"
       >
         <div className="flex items-center justify-between px-5 pt-4 pb-2">
           <div>
-            <div className="text-[10px] tracking-[0.3em] text-[#a0643a] font-semibold">{LABELS[mode]}</div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] tracking-[0.2em] text-[#a0643a] font-bold uppercase">
+                {LABELS[mode] || '地下全圖（測試無限制）'}
+              </span>
+              <span className="px-1.5 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-black">
+                TESTING ∞
+              </span>
+            </div>
             <div className="text-xl font-bold text-[#4a2c18]">地下全圖</div>
           </div>
           <div className="flex items-center gap-2">
-            {mode === 'quick' && (
-              <div className="w-11 h-11 rounded-full bg-[#f08a3c] text-white font-bold flex items-center justify-center tabular-nums">{Math.max(0, left)}s</div>
-            )}
-            <button onClick={onClose} className="w-11 h-11 rounded-full bg-[#4a2c18] text-[#fff4e0] flex items-center justify-center active:scale-90 transition">
+            <button
+              onClick={onClose}
+              className="w-11 h-11 rounded-full bg-[#4a2c18] text-[#fff4e0] flex items-center justify-center active:scale-90 transition hover:bg-[#5a361e] shadow"
+              title="Close Map"
+            >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
-        <div className="flex-1 min-h-0 mx-4 rounded-2xl bg-[#e8d3a8]/60">
+        <div className="flex-1 min-h-0 mx-4 rounded-2xl bg-[#e8d3a8]/60 overflow-hidden shadow-inner">
           <canvas ref={canvasRef} className="w-full h-full block" />
         </div>
         <MapLegend />

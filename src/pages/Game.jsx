@@ -21,6 +21,7 @@ import IntroScreen from '@/components/game/IntroScreen';
 import MapPreview from '@/components/game/MapPreview';
 import VictoryScreen from '@/components/game/VictoryScreen';
 import ExhaustedScreen from '@/components/game/ExhaustedScreen';
+import LevelSelectModal from '@/components/game/LevelSelectModal';
 
 const DEFAULT_INV = {
   water: 0,
@@ -60,9 +61,19 @@ export default function Game() {
   const [result, setResult] = useState(null);
   const [showBag, setShowBag] = useState(false);
   const [showBoard, setShowBoard] = useState(false);
+  const [showLevelSelect, setShowLevelSelect] = useState(false);
   const [bagReady, setBagReady] = useState(false);
   const [drillArmed, setDrillArmed] = useState(false);
   const [exhaustedReason, setExhaustedReason] = useState('tired');
+
+  // Persistent Level Stars earned
+  const [levelStars, setLevelStars] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('rabbit_level_stars') || '{}');
+    } catch {
+      return {};
+    }
+  });
 
   // Persistent Inventory across levels & sessions
   const [inv, setInv] = useState(() => {
@@ -129,7 +140,7 @@ export default function Game() {
     } catch {}
   }, [craft]);
 
-  pausedRef.current = phase !== 'playing' || !!mapMode || showAdModal || !!adType || showBag || showBoard;
+  pausedRef.current = phase !== 'playing' || !!mapMode || showAdModal || !!adType || showBag || showBoard || showLevelSelect;
 
   const startLevel = (n, staminaValue = 100, isReplay = false) => {
     const clampedLevel = Math.max(1, n);
@@ -139,11 +150,23 @@ export default function Game() {
     setLevel(clampedLevel);
     setStamina(staminaValue);
     setDrillArmed(false);
+    setResult(null);
+    setMapMode(false);
+    setShowBag(false);
+    setShowBoard(false);
+    setShowLevelSelect(false);
+    setShowAdModal(false);
+    setAdType(null);
     setPhase('preview');
     sfx.click();
     if (isReplay) {
       setHint(flash(t.restartFullStamina));
     }
+  };
+
+  const handleSelectLevel = (lvl) => {
+    setShowLevelSelect(false);
+    startLevel(lvl, 100, true);
   };
 
   const handleNextLevel = () => {
@@ -248,6 +271,17 @@ export default function Game() {
     );
     const maxScore = s.carrots.length * 100 + s.droplets.length * 50 + 300;
     const stars = score / maxScore >= 0.75 ? 3 : score / maxScore >= 0.5 ? 2 : 1;
+    setLevelStars((prev) => {
+      const currentBest = prev[s.level] || 0;
+      if (stars > currentBest) {
+        const updated = { ...prev, [s.level]: stars };
+        try {
+          localStorage.setItem('rabbit_level_stars', JSON.stringify(updated));
+        } catch {}
+        return updated;
+      }
+      return prev;
+    });
     const rank = addScore({
       id: Date.now(),
       score,
@@ -345,12 +379,7 @@ export default function Game() {
 
   const openMap = () => {
     sfx.click();
-    if (freeViews > 0) {
-      setFreeViews(consumeFreeView());
-      setMapMode('free');
-    } else {
-      setShowAdModal(true);
-    }
+    setMapMode('free');
   };
 
   const closeMap = useCallback(() => setMapMode(null), []);
@@ -399,6 +428,7 @@ export default function Game() {
             onOpenLeaderboard={() => setShowBoard(true)}
             onRestartLevel={handleReplayLevel}
             onGoHome={handleGoHome}
+            onOpenLevelSelect={() => setShowLevelSelect(true)}
           />
 
           <Joystick inputRef={inputRef} />
@@ -452,7 +482,12 @@ export default function Game() {
         />
       )}
       {adType && <AdPlayer type={adType} onDone={finishAd} />}
-      {phase === 'intro' && <IntroScreen onStart={(lvl = 1) => startLevel(lvl, 100, true)} />}
+      {phase === 'intro' && (
+        <IntroScreen
+          onStart={(lvl = 1) => startLevel(lvl, 100, true)}
+          onOpenLevelSelect={() => setShowLevelSelect(true)}
+        />
+      )}
       {phase === 'exhausted' && (
         <ExhaustedScreen
           reason={exhaustedReason}
@@ -461,6 +496,7 @@ export default function Game() {
           onRevive={handleReviveWithBrew}
           onReplay={handleReplayLevel}
           onRestartGame={handleRestartGame}
+          onOpenLevelSelect={() => setShowLevelSelect(true)}
         />
       )}
       {phase === 'won' && (
@@ -471,8 +507,18 @@ export default function Game() {
           onReplay={handleReplayLevel}
           onRestartGame={handleRestartGame}
           onGoHome={handleGoHome}
+          onOpenLevelSelect={() => setShowLevelSelect(true)}
+        />
+      )}
+      {showLevelSelect && (
+        <LevelSelectModal
+          currentLevel={level}
+          levelStars={levelStars}
+          onSelectLevel={handleSelectLevel}
+          onClose={() => setShowLevelSelect(false)}
         />
       )}
     </div>
   );
 }
+

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 
-const R = 50;
+const R = 58;
 const snap = (v) => (Math.abs(v) < 1e-6 ? 0 : v);
 
 export default function Joystick({ inputRef }) {
@@ -25,21 +25,39 @@ export default function Joystick({ inputRef }) {
   return (
     <div
       ref={baseRef}
-      className="absolute bottom-7 right-6 sm:right-10 w-36 h-36 rounded-full touch-none bg-[#2a1a10]/70 backdrop-blur-md border border-[#fff4e0]/15 shadow-[0_10px_30px_rgba(0,0,0,0.45)] z-20"
+      className="absolute bottom-8 right-5 sm:right-9 w-[180px] h-[180px] rounded-full touch-none bg-[#FFF8EB] border-[3px] border-[#D97706] shadow-[0_12px_36px_rgba(217,119,6,0.35)] z-20 select-none"
       onPointerDown={(e) => { active.current = true; e.currentTarget.setPointerCapture(e.pointerId); update(e); }}
       onPointerMove={(e) => active.current && update(e)}
       onPointerUp={end}
       onPointerCancel={end}
     >
+      {/* 8 Directional guide marks */}
       {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} className="absolute left-1/2 top-1/2 w-0 h-0" style={{ transform: `rotate(${i * 45}deg)` }}>
-          <div className={`absolute -top-[5px] left-[54px] w-0 h-0 border-y-[5px] border-y-transparent border-l-[7px] transition-colors duration-150 ${dir === i ? 'border-l-[#f08a3c]' : 'border-l-[#fff4e0]/30'}`} />
+          <div
+            className={`absolute -top-[6px] left-[68px] w-0 h-0 border-y-[6px] border-y-transparent border-l-[9px] transition-colors duration-150 ${
+              dir === i ? 'border-l-[#ea580c] scale-125' : 'border-l-[#d97706]/40'
+            }`}
+          />
         </div>
       ))}
+
+      {/* Center resting ring guide */}
+      <div className="absolute left-1/2 top-1/2 -ml-9 -mt-9 w-[72px] h-[72px] rounded-full border border-dashed border-[#d97706]/35 pointer-events-none" />
+
+      {/* High-Contrast White Thumb Knob with Clear Directional Arrows */}
       <div
-        className="absolute left-1/2 top-1/2 w-14 h-14 -ml-7 -mt-7 rounded-full bg-gradient-to-b from-[#fff4e0] to-[#e8d3b0] shadow-[0_6px_14px_rgba(0,0,0,0.4)] transition-transform duration-75"
+        className="absolute left-1/2 top-1/2 w-16 h-16 -ml-8 -mt-8 rounded-full bg-white border-[2.5px] border-[#d97706] shadow-[0_8px_20px_rgba(0,0,0,0.28)] transition-transform duration-75 flex items-center justify-center pointer-events-none"
         style={{ transform: `translate(${knob.x}px, ${knob.y}px)` }}
-      />
+      >
+        <div className="relative w-full h-full flex items-center justify-center select-none font-bold">
+          <span className="text-[12px] font-black text-[#b45309] leading-none absolute top-1.5">▲</span>
+          <span className="text-[12px] font-black text-[#b45309] leading-none absolute bottom-1.5">▼</span>
+          <span className="text-[12px] font-black text-[#b45309] leading-none absolute left-1.5">◀</span>
+          <span className="text-[12px] font-black text-[#b45309] leading-none absolute right-1.5">▶</span>
+          <div className="w-3.5 h-3.5 rounded-full bg-[#f59e0b] shadow-inner" />
+        </div>
+      </div>
     </div>
   );
 }

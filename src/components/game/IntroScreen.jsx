@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Carrot, Play } from 'lucide-react';
+import { Carrot, Play, MapPin } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
 
-export default function IntroScreen({ onStart }) {
+export default function IntroScreen({ onStart, onOpenLevelSelect }) {
   const { t, lang, toggle } = useLang();
   return (
     <div className="absolute inset-0 z-50 overflow-y-auto bg-gradient-to-b from-[#7fb35a] via-[#5a331b] to-[#1a0f08]">
@@ -33,13 +33,22 @@ export default function IntroScreen({ onStart }) {
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.55 }} className="mt-8 flex flex-col gap-3 w-full max-w-xs">
           <button
             onClick={() => onStart(1)}
-            className="flex items-center justify-center gap-2 py-4 px-8 rounded-full bg-gradient-to-b from-[#f7a45c] to-[#e0702a] text-white text-lg font-bold shadow-[0_14px_40px_rgba(240,138,60,0.45)] active:scale-95 transition hover:brightness-105"
+            className="w-full flex items-center justify-center gap-2.5 py-4 px-6 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-lg shadow-[0_12px_36px_rgba(249,115,22,0.45)] ring-2 ring-orange-300/40 active:scale-95 transition"
           >
-            <Play className="w-5 h-5" fill="white" /> {t.start}
+            <Play className="w-6 h-6" fill="white" /> <span>{t.start}</span>
           </button>
+
+          <button
+            onClick={onOpenLevelSelect}
+            className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-2xl bg-[#FFF8EB] hover:bg-white text-[#9a3412] font-extrabold text-base shadow-md active:scale-95 transition border-2 border-[#ea580c]/30"
+          >
+            <MapPin className="w-5 h-5 text-[#ea580c]" />
+            <span>{t.selectLevelBtn}</span>
+          </button>
+
           <button
             onClick={() => onStart(40)}
-            className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-full bg-black/40 border border-[#ef4444]/40 text-[#fca5a5] text-xs font-bold shadow-md active:scale-95 transition hover:bg-black/60 hover:text-white"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-black/40 border border-[#ef4444]/40 text-[#fca5a5] text-xs font-bold shadow-md active:scale-95 transition hover:bg-black/60 hover:text-white"
           >
             <span>{t.startLevel40}</span>
           </button>
@@ -54,3 +63,4 @@ export default function IntroScreen({ onStart }) {
     </div>
   );
 }
+

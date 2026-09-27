@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { AlertTriangle, RotateCcw, Sparkles, Home } from 'lucide-react';
+import { AlertTriangle, RotateCcw, Sparkles, Home, MapPin } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
 
-export default function ExhaustedScreen({ reason, level, inv, onRevive, onReplay, onRestartGame }) {
+export default function ExhaustedScreen({ reason, level, inv, onRevive, onReplay, onRestartGame, onOpenLevelSelect }) {
   const { t } = useLang();
   const hasBrew = (inv.brew || 0) > 0;
   const isBeetle = reason === 'beetle';
@@ -64,6 +64,16 @@ export default function ExhaustedScreen({ reason, level, inv, onRevive, onReplay
             <RotateCcw className="w-4 h-4" />
             <span>{t.retryLevel}</span>
           </button>
+
+          {onOpenLevelSelect && (
+            <button
+              onClick={onOpenLevelSelect}
+              className="w-full py-3 px-4 rounded-full bg-[#FFF8EB] border-2 border-[#ea580c]/30 text-[#9a3412] font-extrabold text-sm active:scale-95 transition hover:bg-white flex items-center justify-center gap-2 shadow"
+            >
+              <MapPin className="w-4 h-4 text-[#ea580c]" />
+              <span>{t.selectLevel}</span>
+            </button>
+          )}
 
           <button
             onClick={onRestartGame}
