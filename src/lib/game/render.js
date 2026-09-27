@@ -25,11 +25,20 @@ export function render(ctx, fog, s, w, h, t, dpr) {
   s.materials.forEach((m) => !m.taken && drawMaterial(ctx, (m.x + 0.5 + m.ox) * ts, (m.y + 0.5 + m.oy) * ts, m.type, ts, t));
   s.carrots.forEach((c) => !c.taken && drawCarrot(ctx, (c.x + 0.5) * ts, (c.y + 0.5) * ts + Math.sin(t * 3 + c.x) * ts * 0.05, ts * 0.5, 0.5, t));
 
+  const isFinal = s.level >= 20;
   const gx = (s.exit.x - 0.6) * ts, gy = (s.exit.y + 0.5) * ts;
-  const glow = ctx.createRadialGradient(gx, gy, 0, gx, gy, ts * 1.4);
-  glow.addColorStop(0, 'rgba(255,200,120,0.45)'); glow.addColorStop(1, 'rgba(255,200,120,0)');
-  ctx.fillStyle = glow; ctx.fillRect(gx - ts * 1.4, gy - ts * 1.4, ts * 2.8, ts * 2.8);
-  drawCarrot(ctx, gx, gy, ts * 1.9, 1.2, t);
+  const glowRad = isFinal ? ts * 2.6 : ts * 1.4;
+  const glow = ctx.createRadialGradient(gx, gy, 0, gx, gy, glowRad);
+  if (isFinal) {
+    glow.addColorStop(0, 'rgba(255,220,50,0.85)');
+    glow.addColorStop(0.4, 'rgba(255,140,0,0.45)');
+    glow.addColorStop(1, 'rgba(255,140,0,0)');
+  } else {
+    glow.addColorStop(0, 'rgba(255,200,120,0.45)');
+    glow.addColorStop(1, 'rgba(255,200,120,0)');
+  }
+  ctx.fillStyle = glow; ctx.fillRect(gx - glowRad, gy - glowRad, glowRad * 2, glowRad * 2);
+  drawCarrot(ctx, gx, gy, isFinal ? ts * 3.0 : ts * 1.9, 1.2, t);
 
   s.particles.forEach((p) => {
     ctx.fillStyle = p.drill ? DRILL_PARTICLE_COLORS[p.c % 4] : PARTICLE_COLORS[p.c % 3];

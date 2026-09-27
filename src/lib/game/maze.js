@@ -35,9 +35,10 @@ function bfsDist(grid, W, H, sx, sy) {
  * - solid outer border (no edge soft walls → no "hug the wall" dig-through)
  */
 export function createLevel(level) {
-  const tier = Math.floor((level - 1) / 5);
-  const cw = Math.min(17, 6 + tier * 3 + Math.floor((level - 1) % 5));
-  const ch = Math.min(21, 8 + tier * 3 + Math.floor((level - 1) % 5));
+  const isFinal = level >= 20;
+  const tier = Math.min(4, Math.floor((level - 1) / 5));
+  const cw = isFinal ? 16 : Math.min(17, 6 + Math.min(3, tier) * 3 + Math.floor((level - 1) % 5));
+  const ch = isFinal ? 19 : Math.min(21, 8 + Math.min(3, tier) * 3 + Math.floor((level - 1) % 5));
   const W = cw * 2 + 1, H = ch * 2 + 1;
   const grid = Array.from({ length: H }, () => Array(W).fill(STONE));
   const seen = Array.from({ length: ch }, () => Array(cw).fill(false));

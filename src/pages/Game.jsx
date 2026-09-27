@@ -129,14 +129,36 @@ export default function Game() {
 
   pausedRef.current = phase !== 'playing' || !!mapMode || showAdModal || !!adType || showBag || showBoard;
 
-  const startLevel = (n) => {
-    stateRef.current = createLevel(n);
+  const startLevel = (n, staminaValue = 100, isReplay = false) => {
+    const clampedLevel = Math.min(20, Math.max(1, n));
+    stateRef.current = createLevel(clampedLevel);
+    stateRef.current.stamina = staminaValue;
     inputRef.current = { x: 0, y: 0 };
-    setLevel(n);
-    setStamina(100);
+    setLevel(clampedLevel);
+    setStamina(staminaValue);
     setDrillArmed(false);
     setPhase('preview');
     sfx.click();
+    if (isReplay) {
+      setHint(flash(t.restartFullStamina));
+    }
+  };
+
+  const handleNextLevel = () => {
+    const currentStamina = stateRef.current ? stateRef.current.stamina : stamina;
+    // Award +10 stamina victory bonus, capped at 100, but do NOT fully refill it
+    const bonusStamina = Math.min(100, Math.max(15, Math.round(currentStamina + 10)));
+    startLevel(level + 1, bonusStamina, false);
+    setHint(flash(t.bonusStaminaHint(10, bonusStamina)));
+  };
+
+  const handleReplayLevel = () => {
+    // If the player dies / restarts the current level ("重玩本關"), restore stamina to 100
+    startLevel(level, 100, true);
+  };
+
+  const handleRestartGame = () => {
+    startLevel(1, 100, true);
   };
 
   const handleDig = useCallback(() => {
@@ -290,7 +312,9 @@ export default function Game() {
     setMutedState(!muted);
   };
 
+  const isFinal = level >= 20;
   const tier = Math.min(Math.floor((level - 1) / 5), t.tiers.length - 1);
+  const levelDisplayName = isFinal ? t.finalLevelName : t.tiers[tier];
   const usableCount = (inv.brew || 0) + (inv.claws || 0) + (inv.drill || 0);
 
   return (
@@ -308,13 +332,14 @@ export default function Game() {
         <>
           <TopBar
             level={level}
-            levelName={t.tiers[tier]}
+            levelName={levelDisplayName}
             stamina={stamina}
             freeViews={freeViews}
             muted={muted}
             onToggleMute={toggleMute}
             onOpenMap={openMap}
             onOpenLeaderboard={() => setShowBoard(true)}
+            onRestartLevel={handleReplayLevel}
           />
 
           <Joystick inputRef={inputRef} />
@@ -368,13 +393,14 @@ export default function Game() {
         />
       )}
       {adType && <AdPlayer type={adType} onDone={finishAd} />}
-      {phase === 'intro' && <IntroScreen onStart={() => startLevel(1)} />}
+      {phase === 'intro' && <IntroScreen onStart={() => startLevel(1, 100, true)} />}
       {phase === 'won' && (
         <VictoryScreen
           level={level}
           result={result}
-          onNext={() => startLevel(level + 1)}
-          onReplay={() => startLevel(level)}
+          onNext={handleNextLevel}
+          onReplay={handleReplayLevel}
+          onRestartGame={handleRestartGame}
         />
       )}
     </div>
