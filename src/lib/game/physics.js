@@ -1,7 +1,8 @@
 import { PATH, SOFT, STONE, EXIT } from './maze';
 
-const HALF = 0.27, SPEED = 3.6, REGEN = 4;
-export const DIG_COST = 25;
+const HALF = 0.27, SPEED = 3.6;
+// No passive regen — dig must cost real stamina; recover only from water / carrots / brew
+export const DIG_COST = 28;
 
 function solidAt(s, x, y) {
   const tx = Math.floor(x), ty = Math.floor(y);
@@ -17,7 +18,6 @@ function hits(s, x, y) {
 
 const clamp = (v, a) => Math.max(-a, Math.min(a, v));
 
-// Slides the bunny toward a corridor's center when it bumps a corner
 function nudge(s, axis, dir, amt) {
   if (axis === 'y') {
     const row = Math.floor(s.y);
@@ -35,7 +35,7 @@ function nudge(s, axis, dir, amt) {
 export function step(s, input, dt, ev) {
   if (s.won) return;
   s.time += dt;
-  s.stamina = Math.min(100, s.stamina + REGEN * dt);
+  // Intentionally NO passive stamina regen
   s.shake = Math.max(0, s.shake - dt);
   const ix = input.x, iy = input.y;
   s.moving = !!(ix || iy);
@@ -50,14 +50,14 @@ export function step(s, input, dt, ev) {
   for (const c of s.carrots) {
     if (!c.taken && Math.hypot(c.x + 0.5 - s.x, c.y + 0.5 - s.y) < 0.55) {
       c.taken = true;
-      s.stamina = Math.min(100, s.stamina + 30);
+      s.stamina = Math.min(100, s.stamina + 15);
       ev.push('pickup');
     }
   }
   for (const d of s.droplets) {
     if (!d.taken && Math.hypot(d.x + 0.5 + d.ox - s.x, d.y + 0.5 + d.oy - s.y) < 0.55) {
       d.taken = true;
-      s.stamina = Math.min(100, s.stamina + 20);
+      s.stamina = Math.min(100, s.stamina + 25);
       s.water++;
       ev.push('water');
     }
@@ -77,6 +77,7 @@ export function dig(s) {
   const fx = Math.sign(s.facing.x), fy = Math.sign(s.facing.y);
   const tx = Math.floor(s.x), ty = Math.floor(s.y);
   const cands = fx && fy ? [[tx + fx, ty], [tx, ty + fy], [tx + fx, ty + fy]] : [[tx + fx, ty + fy]];
+  // Dig only interior soft walls (not on the outer ring)
   const inside = (x, y) => x > 0 && y > 0 && x < s.W - 1 && y < s.H - 1;
   const soft = cands.find(([x, y]) => inside(x, y) && s.grid[y][x] === SOFT);
   if (!soft) {
