@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { drawMiniMap } from '@/lib/game/minimap';
+import { drawAncientMap } from '@/lib/game/minimap';
 import { drawCarrot, drawBurrow, drawRoots } from '@/lib/game/characters';
 import { sfx } from '@/lib/game/sound';
 import { useLang } from '@/lib/i18n';
@@ -25,7 +25,7 @@ export default function MapPreview({ stateRef, onDone }) {
       const ctx = c.getContext('2d');
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
-      drawMiniMap(ctx, s, w, h, 0);
+      drawAncientMap(ctx, s, w, h);
 
       const mk = m.getContext('2d');
       mk.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -96,8 +96,8 @@ export default function MapPreview({ stateRef, onDone }) {
         <h2 className="text-2xl font-bold text-[#4a2c18]">{t.previewTitle}</h2>
         <p className="text-xs text-[#8a6a50] mt-1">{t.previewHint}</p>
       </div>
-      <div className="relative flex-1 min-h-0 w-full max-w-lg mx-auto my-3 rounded-3xl border-4 border-dashed border-[#a0643a]/50 overflow-hidden">
-        <canvas ref={mapRef} className="absolute inset-0 w-full h-full" style={{ filter: 'blur(6px)' }} />
+      <div className="relative flex-1 min-h-0 w-full max-w-lg mx-auto my-3 rounded-3xl border-4 border-dashed border-[#a0643a]/50 overflow-hidden shadow-[inset_0_4px_16px_rgba(0,0,0,0.25)]">
+        <canvas ref={mapRef} className="absolute inset-0 w-full h-full" />
         <canvas ref={markRef} className="absolute inset-0 w-full h-full" />
       </div>
       <div className="h-24 shrink-0 flex items-center justify-center relative">

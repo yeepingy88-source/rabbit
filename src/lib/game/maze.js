@@ -35,11 +35,21 @@ function bfsDist(grid, W, H, sx, sy) {
  * - solid outer border (no edge soft walls → no "hug the wall" dig-through)
  */
 export function createLevel(level) {
-  const isFinal = level >= 20;
+  // Sizing by level tier:
+  // Levels 1-5: 9x9 (Compact burrow)
+  // Levels 6-10: 15x15 (Deep winding cavern)
+  // Levels 11-15: 19x19 (Vast subterranean labyrinth)
+  // Levels 16-20: 23x23 (Epic mega abyss finale)
+  let dim = 9;
+  if (level >= 16) dim = 23;
+  else if (level >= 11) dim = 19;
+  else if (level >= 6) dim = 15;
+  else dim = 9;
+
+  const W = dim, H = dim;
+  const cw = (W - 1) / 2;
+  const ch = (H - 1) / 2;
   const tier = Math.min(4, Math.floor((level - 1) / 5));
-  const cw = isFinal ? 16 : Math.min(17, 6 + Math.min(3, tier) * 3 + Math.floor((level - 1) % 5));
-  const ch = isFinal ? 19 : Math.min(21, 8 + Math.min(3, tier) * 3 + Math.floor((level - 1) % 5));
-  const W = cw * 2 + 1, H = ch * 2 + 1;
   const grid = Array.from({ length: H }, () => Array(W).fill(STONE));
   const seen = Array.from({ length: ch }, () => Array(cw).fill(false));
 
@@ -73,18 +83,59 @@ export function createLevel(level) {
 
   // Collect interior PATH cells
   const paths = [];
-  for (let y = 1; y < H - 1; y++)
-    for (let x = 1; x < W - 1; x++)
+  for (let y = 1; y < H - 1; y++) {
+    for (let x = 1; x < W - 1; x++) {
       if (grid[y][x] === PATH) paths.push([x, y]);
-
-  // Random start, then exit = farthest PATH cell (forces deep route)
-  const [sx, sy] = paths[Math.floor(Math.random() * paths.length)];
-  const dist = bfsDist(grid, W, H, sx, sy);
-  let best = [sx, sy], bestD = 0;
-  for (const [x, y] of paths) {
-    if (dist[y][x] > bestD) { bestD = dist[y][x]; best = [x, y]; }
+    }
   }
-  const [ex, ey] = best;
+
+  // Enforce strict distance check:
+  // 1. Manhattan distance >= 70% of total maze dimension
+  // 2. The exit can NEVER be in the same quadrant or adjacent to start
+  const midX = (W - 1) / 2;
+  const midY = (H - 1) / 2;
+  const maxPossibleSpan = (W - 3) + (H - 3);
+  const minRequiredMDist = Math.max(8, Math.floor(0.70 * maxPossibleSpan));
+
+  const getQuadrant = (x, y) => `${x < midX ? -1 : 1},${y < midY ? -1 : 1}`;
+
+  const validPairs = [];
+  for (let i = 0; i < paths.length; i++) {
+    const p1 = paths[i];
+    const q1 = getQuadrant(p1[0], p1[1]);
+    for (let j = i + 1; j < paths.length; j++) {
+      const p2 = paths[j];
+      const q2 = getQuadrant(p2[0], p2[1]);
+      if (q1 === q2) continue; // NEVER in the same quadrant
+
+      const mDist = Math.abs(p1[0] - p2[0]) + Math.abs(p1[1] - p2[1]);
+      if (mDist < minRequiredMDist) continue; // MUST be >= 70% of total dimension
+
+      validPairs.push({ p1, p2, mDist });
+    }
+  }
+
+  let sx, sy, ex, ey;
+  if (validPairs.length > 0) {
+    shuffle(validPairs);
+    validPairs.sort((a, b) => b.mDist - a.mDist);
+    // Select from top 25% farthest opposite-quadrant pairs
+    const topCandidates = validPairs.slice(0, Math.max(1, Math.floor(validPairs.length * 0.25)));
+    const chosen = topCandidates[Math.floor(Math.random() * topCandidates.length)];
+    if (Math.random() < 0.5) {
+      [sx, sy] = chosen.p1;
+      [ex, ey] = chosen.p2;
+    } else {
+      [sx, sy] = chosen.p2;
+      [ex, ey] = chosen.p1;
+    }
+  } else {
+    // Fail-safe opposite corners if ever needed
+    sx = 1; sy = 1;
+    ex = W - 2; ey = H - 2;
+  }
+
+  const dist = bfsDist(grid, W, H, sx, sy);
 
   // Place EXIT; keep outer border STONE except the exit cell itself
   grid[ey][ex] = EXIT;
@@ -132,49 +183,178 @@ export function createLevel(level) {
   }
   deadEnds.sort((a, b) => b.dist - a.dist);
 
-  // Rare Deep Core Shard: occasionally spawns at the end of deep dead ends
-  let shardSpot = null;
-  if (deadEnds.length > 0 && (Math.random() < 0.75 || level >= 2)) {
-    shardSpot = deadEnds[0];
+  // Drastic Item Reduction (>= 75% clean empty paths)
+  let nCarrots = 1;
+  let nDroplets = 1;
+  let maxMaterials = 1;
+
+  if (level <= 5) {
+    nCarrots = 1;
+    nDroplets = 1;
+    maxMaterials = 1;
+  } else if (level <= 10) {
+    nCarrots = 1;
+    nDroplets = 2;
+    maxMaterials = 1;
+  } else if (level <= 15) {
+    nCarrots = 2;
+    nDroplets = 2;
+    maxMaterials = 2;
+  } else {
+    nCarrots = 2;
+    nDroplets = 3;
+    maxMaterials = 2;
   }
 
   const spots = [];
-  for (let y = 1; y < H - 1; y++)
+  for (let y = 1; y < H - 1; y++) {
     for (let x = 1; x < W - 1; x++) {
-      const far = (p) => Math.abs(p.x - x) + Math.abs(p.y - y) > 3;
+      const farThreshold = W <= 9 ? 2 : 3;
+      const far = (p) => Math.abs(p.x - x) + Math.abs(p.y - y) >= farThreshold;
       if (
         grid[y][x] === PATH &&
         !(x === landmark.x && y === landmark.y) &&
-        !(shardSpot && x === shardSpot.x && y === shardSpot.y) &&
         far(start) &&
         far(exit)
-      )
+      ) {
         spots.push([x, y]);
+      }
     }
+  }
   shuffle(spots);
-  const nC = 4 + level;
-  const carrots = spots.slice(0, nC).map(([x, y]) => ({ x, y, taken: false }));
-  const rest = spots.slice(nC);
-  const mk = (n, type) => rest.splice(0, n).map(([x, y]) => ({
-    x, y, type, ox: (Math.random() - 0.5) * 0.5, oy: (Math.random() - 0.5) * 0.5, taken: false,
-  }));
-  const droplets = mk(3 + Math.floor(level / 2), 'water');
-  const materials = [...mk(2 + tier, 'fiber'), ...mk(1 + tier, 'clay')];
 
-  if (shardSpot) {
+  // 1. Carrots
+  const carrots = spots.splice(0, nCarrots).map(([x, y]) => ({ x, y, taken: false }));
+
+  // 2. Water Droplets
+  const droplets = spots.splice(0, nDroplets).map(([x, y]) => ({
+    x,
+    y,
+    type: 'water',
+    ox: (Math.random() - 0.5) * 0.4,
+    oy: (Math.random() - 0.5) * 0.4,
+    taken: false,
+  }));
+
+  // 3. Crafting Materials (Strictly limited across the entire level)
+  const materials = [];
+  let matBudget = maxMaterials;
+
+  // Shard in a deep dead-end if budget allows
+  if (matBudget > 0 && deadEnds.length > 0 && (Math.random() < 0.4 || level >= 6)) {
+    const shardSpot = deadEnds[0];
+    if (
+      !(shardSpot.x === start.x && shardSpot.y === start.y) &&
+      !(shardSpot.x === exit.x && shardSpot.y === exit.y) &&
+      !(shardSpot.x === landmark.x && shardSpot.y === landmark.y)
+    ) {
+      materials.push({
+        x: shardSpot.x,
+        y: shardSpot.y,
+        type: 'shard',
+        ox: 0,
+        oy: 0,
+        taken: false,
+      });
+      matBudget--;
+    }
+  }
+
+  // Fill remaining material budget from available spots
+  const matTypes = ['fiber', 'clay'];
+  while (matBudget > 0 && spots.length > 0) {
+    const [x, y] = spots.splice(0, 1)[0];
+    const type = matTypes[Math.floor(Math.random() * matTypes.length)];
     materials.push({
-      x: shardSpot.x,
-      y: shardSpot.y,
-      type: 'shard',
-      ox: 0,
-      oy: 0,
+      x,
+      y,
+      type,
+      ox: (Math.random() - 0.5) * 0.4,
+      oy: (Math.random() - 0.5) * 0.4,
       taken: false,
+    });
+    matBudget--;
+  }
+
+  // Spawn 2 to 3 Cave Beetles when level >= 40
+  const beetles = [];
+  if (level >= 40) {
+    const numBeetles = level >= 45 ? 3 : 2;
+    const corridors = [];
+
+    // Horizontal straight corridors of PATH cells (length >= 3)
+    for (let y = 1; y < H - 1; y++) {
+      let seg = [];
+      for (let x = 1; x < W - 1; x++) {
+        if (grid[y][x] === PATH) seg.push({ x, y });
+        else {
+          if (seg.length >= 3) corridors.push({ axis: 'x', cells: seg });
+          seg = [];
+        }
+      }
+      if (seg.length >= 3) corridors.push({ axis: 'x', cells: seg });
+    }
+
+    // Vertical straight corridors of PATH cells (length >= 3)
+    for (let x = 1; x < W - 1; x++) {
+      let seg = [];
+      for (let y = 1; y < H - 1; y++) {
+        if (grid[y][x] === PATH) seg.push({ x, y });
+        else {
+          if (seg.length >= 3) corridors.push({ axis: 'y', cells: seg });
+          seg = [];
+        }
+      }
+      if (seg.length >= 3) corridors.push({ axis: 'y', cells: seg });
+    }
+
+    // Filter corridors sufficiently far from start burrow (>= 4 Manhattan)
+    const validCorridors = corridors.filter((c) => {
+      const mid = c.cells[Math.floor(c.cells.length / 2)];
+      const dStart = Math.abs(mid.x - start.x) + Math.abs(mid.y - start.y);
+      return dStart >= 4;
+    });
+
+    shuffle(validCorridors);
+
+    // Pick corridors that are spaced apart
+    const chosen = [];
+    for (const c of validCorridors) {
+      if (chosen.length >= numBeetles) break;
+      const mid = c.cells[Math.floor(c.cells.length / 2)];
+      const tooClose = chosen.some((other) => {
+        const oMid = other.cells[Math.floor(other.cells.length / 2)];
+        return Math.hypot(mid.x - oMid.x, mid.y - oMid.y) < 4.5;
+      });
+      if (!tooClose) chosen.push(c);
+    }
+
+    for (const c of validCorridors) {
+      if (chosen.length >= numBeetles) break;
+      if (!chosen.includes(c)) chosen.push(c);
+    }
+
+    chosen.forEach((c, idx) => {
+      const mid = c.cells[Math.floor(c.cells.length / 2)];
+      const isX = c.axis === 'x';
+      beetles.push({
+        id: `beetle-${idx}`,
+        x: mid.x + 0.5,
+        y: mid.y + 0.5,
+        dx: isX ? (Math.random() < 0.5 ? 1 : -1) : 0,
+        dy: isX ? 0 : (Math.random() < 0.5 ? 1 : -1),
+        speed: 1.85,
+        axis: c.axis,
+        minCoord: (isX ? c.cells[0].x : c.cells[0].y) + 0.5,
+        maxCoord: (isX ? c.cells[c.cells.length - 1].x : c.cells[c.cells.length - 1].y) + 0.5,
+      });
     });
   }
 
   return {
-    level, W, H, grid, start, exit, landmark, carrots, droplets, materials,
+    level, W, H, grid, start, exit, landmark, carrots, droplets, materials, beetles,
     x: start.x + 0.5, y: start.y + 0.5, facing: { x: 0, y: -1 },
-    stamina: 100, water: 0, freeDigs: 0, drillActive: false, time: 0, digs: 0, particles: [], shake: 0, won: false, moving: false,
+    stamina: 100, water: 0, freeDigs: 0, drillActive: false, time: 0, digs: 0, particles: [], shake: 0, won: false, moving: false, beetleCooldown: 0,
   };
 }
+

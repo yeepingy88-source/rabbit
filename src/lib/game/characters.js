@@ -190,3 +190,98 @@ export function drawBunny(ctx, x, y, ts, facing, t, moving, drillActive = false)
   ctx.fillStyle = 'rgba(245,154,173,0.45)'; circle(ctx, -s * 0.42, -s * 0.4, s * 0.09); circle(ctx, s * 0.42, -s * 0.4, s * 0.09);
   ctx.restore();
 }
+
+export function drawBeetle(ctx, x, y, ts, dir, t) {
+  const s = ts * 0.32;
+  ctx.save();
+  ctx.translate(x, y);
+
+  // Drop shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.45)';
+  oval(ctx, 0, s * 0.15, s * 0.95, s * 0.75);
+
+  // Heading rotation (dir has dx, dy)
+  const angle = Math.atan2(dir.dy || 0, dir.dx || 0) + Math.PI / 2;
+  ctx.rotate(angle);
+
+  // 6 Animated articulated legs
+  ctx.strokeStyle = '#1c1917';
+  ctx.lineWidth = Math.max(1.5, s * 0.1);
+  ctx.lineCap = 'round';
+  [-1, 1].forEach((side) => {
+    for (let i = 0; i < 3; i++) {
+      const legY = (i - 1) * s * 0.45;
+      const wiggle = Math.sin(t * 16 + i * 1.5 + (side > 0 ? Math.PI : 0)) * s * 0.25;
+      ctx.beginPath();
+      ctx.moveTo(side * s * 0.5, legY);
+      ctx.lineTo(side * (s * 1.05 + Math.abs(wiggle) * 0.2), legY + wiggle);
+      ctx.lineTo(side * (s * 1.35), legY + wiggle + s * 0.2);
+      ctx.stroke();
+    }
+  });
+
+  // Antennae
+  [-1, 1].forEach((side) => {
+    const twitch = Math.sin(t * 9 + side) * 0.12;
+    ctx.strokeStyle = '#292524';
+    ctx.lineWidth = Math.max(1, s * 0.08);
+    ctx.beginPath();
+    ctx.moveTo(side * s * 0.25, -s * 0.8);
+    ctx.quadraticCurveTo(side * (s * 0.6 + twitch * s), -s * 1.2, side * (s * 0.8), -s * 1.5);
+    ctx.stroke();
+  });
+
+  // Abdomen / Carapace (Dark obsidian metallic chitin)
+  const carapaceGrad = ctx.createLinearGradient(-s * 0.7, 0, s * 0.7, 0);
+  carapaceGrad.addColorStop(0, '#171717');
+  carapaceGrad.addColorStop(0.5, '#292524');
+  carapaceGrad.addColorStop(1, '#171717');
+  ctx.fillStyle = carapaceGrad;
+  oval(ctx, 0, s * 0.15, s * 0.7, s * 0.85);
+
+  // Carapace center split line
+  ctx.strokeStyle = '#0c0a09';
+  ctx.lineWidth = Math.max(1, s * 0.07);
+  ctx.beginPath();
+  ctx.moveTo(0, -s * 0.65);
+  ctx.lineTo(0, s * 0.95);
+  ctx.stroke();
+
+  // Subtle wing sheen highlights
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  oval(ctx, -s * 0.28, s * 0.1, s * 0.16, s * 0.55);
+  oval(ctx, s * 0.28, s * 0.1, s * 0.16, s * 0.55);
+
+  // Thorax
+  ctx.fillStyle = '#262626';
+  oval(ctx, 0, -s * 0.45, s * 0.58, s * 0.32);
+
+  // Head
+  ctx.fillStyle = '#171717';
+  oval(ctx, 0, -s * 0.72, s * 0.42, s * 0.26);
+
+  // Glowing Crimson Eyes
+  const eyeGlowRadius = s * 0.38 * (1 + 0.15 * Math.sin(t * 8));
+  [-1, 1].forEach((side) => {
+    const eyeX = side * s * 0.24;
+    const eyeY = -s * 0.78;
+
+    // Red glow
+    const eg = ctx.createRadialGradient(eyeX, eyeY, 0, eyeX, eyeY, eyeGlowRadius);
+    eg.addColorStop(0, 'rgba(239, 68, 68, 0.9)');
+    eg.addColorStop(0.5, 'rgba(220, 38, 38, 0.4)');
+    eg.addColorStop(1, 'rgba(220, 38, 38, 0)');
+    ctx.fillStyle = eg;
+    circle(ctx, eyeX, eyeY, eyeGlowRadius);
+
+    // Crimson eyeball
+    ctx.fillStyle = '#ef4444';
+    circle(ctx, eyeX, eyeY, s * 0.1);
+
+    // Bright eye core
+    ctx.fillStyle = '#fecaca';
+    circle(ctx, eyeX, eyeY - s * 0.02, s * 0.04);
+  });
+
+  ctx.restore();
+}

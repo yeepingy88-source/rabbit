@@ -42,6 +42,10 @@ export const sfx = {
     setTimeout(() => tone(240, 0.25, 'square', 0.15, 60), 60);
     setTimeout(() => seq([880, 1175, 1760], 50, 'sine', 0.1), 120);
   },
+  bite: () => {
+    tone(180, 0.16, 'sawtooth', 0.26, 80);
+    setTimeout(() => tone(110, 0.22, 'square', 0.22, 50), 50);
+  },
   tick: () => tone(880, 0.04, 'sine', 0.05),
 };
 

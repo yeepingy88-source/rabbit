@@ -30,11 +30,21 @@ export default function IntroScreen({ onStart }) {
           className="mt-8 max-w-sm text-[15px] leading-relaxed text-[#fff4e0]/80 whitespace-pre-line">
           {t.story}
         </motion.p>
-        <motion.button initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.55 }}
-          onClick={onStart}
-          className="mt-10 flex items-center gap-2 px-10 py-4 rounded-full bg-gradient-to-b from-[#f7a45c] to-[#e0702a] text-white text-lg font-bold shadow-[0_14px_40px_rgba(240,138,60,0.45)] active:scale-95 transition">
-          <Play className="w-5 h-5" fill="white" /> {t.start}
-        </motion.button>
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.55 }} className="mt-8 flex flex-col gap-3 w-full max-w-xs">
+          <button
+            onClick={() => onStart(1)}
+            className="flex items-center justify-center gap-2 py-4 px-8 rounded-full bg-gradient-to-b from-[#f7a45c] to-[#e0702a] text-white text-lg font-bold shadow-[0_14px_40px_rgba(240,138,60,0.45)] active:scale-95 transition hover:brightness-105"
+          >
+            <Play className="w-5 h-5" fill="white" /> {t.start}
+          </button>
+          <button
+            onClick={() => onStart(40)}
+            className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-full bg-black/40 border border-[#ef4444]/40 text-[#fca5a5] text-xs font-bold shadow-md active:scale-95 transition hover:bg-black/60 hover:text-white"
+          >
+            <span>{t.startLevel40}</span>
+          </button>
+        </motion.div>
+
         <div className="mt-10 grid grid-cols-3 gap-3 max-w-sm w-full text-[11px] text-[#fff4e0]/60">
           <div className="rounded-2xl bg-black/20 p-3 whitespace-pre-line">{t.tipMove}</div>
           <div className="rounded-2xl bg-black/20 p-3 whitespace-pre-line">{t.tipDig}</div>

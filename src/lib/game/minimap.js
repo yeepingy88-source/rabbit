@@ -33,8 +33,45 @@ export function drawMiniMap(ctx, s, w, h, t) {
   s.carrots.forEach((c) => { if (!c.taken) { ctx.fillStyle = '#f08a3c'; circle(ctx, cx(c.x), cy(c.y), ts * 0.2); } });
   drawCarrot(ctx, cx(s.exit.x), cy(s.exit.y) + ts * 0.2, ts * 1.5, 0, t);
 
+  // Render Cave Beetles (Level 40+)
+  (s.beetles || []).forEach((b) => {
+    const bx = cx(b.x), by = cy(b.y);
+    const p = (Math.sin(t * 8) + 1) / 2;
+    ctx.fillStyle = `rgba(239, 68, 68, ${0.7 - 0.3 * p})`;
+    circle(ctx, bx, by, ts * (0.45 + 0.35 * p));
+    ctx.fillStyle = '#1c1917';
+    circle(ctx, bx, by, ts * 0.32);
+    ctx.fillStyle = '#ef4444';
+    circle(ctx, bx, by, ts * 0.16);
+  });
+
   const bx = ox + s.x * ts, by = oy + s.y * ts, p = (Math.sin(t * 5) + 1) / 2;
   ctx.fillStyle = `rgba(255,107,139,${0.5 - 0.35 * p})`; circle(ctx, bx, by, ts * (0.6 + 1 * p));
   ctx.fillStyle = '#ffffff'; circle(ctx, bx, by, ts * 0.45);
   ctx.strokeStyle = '#ff6b8b'; ctx.lineWidth = ts * 0.16; ctx.stroke();
+}
+
+export function drawAncientMap(ctx, s, w, h) {
+  const ts = Math.min((w - 20) / s.W, (h - 20) / s.H);
+  const ox = (w - ts * s.W) / 2, oy = (h - ts * s.H) / 2;
+  ctx.clearRect(0, 0, w, h);
+
+  // Clean antique map parchment corridors vs dark sepia stone walls
+  // Strictly NO small items, NO colored dots (blue, orange, pink, brown), NO soft dirt blocks, NO beetles!
+  for (let y = 0; y < s.H; y++) {
+    for (let x = 0; x < s.W; x++) {
+      const v = s.grid[y][x];
+      if (v === PATH || v === EXIT) {
+        ctx.fillStyle = '#f4e3c1'; // Crisp clean parchment corridor
+      } else {
+        ctx.fillStyle = '#422a19'; // Deep ancient sepia stone wall
+      }
+      ctx.fillRect(ox + x * ts, oy + y * ts, ts + 0.5, ts + 0.5);
+    }
+  }
+
+  // Clean outer perimeter
+  ctx.strokeStyle = '#2d1a0e';
+  ctx.lineWidth = Math.max(1.5, ts * 0.15);
+  ctx.strokeRect(ox, oy, ts * s.W, ts * s.H);
 }

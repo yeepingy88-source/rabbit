@@ -1,5 +1,5 @@
 import React from 'react';
-import { Map as MapIcon, Volume2, VolumeX, Zap, Trophy, RotateCcw } from 'lucide-react';
+import { Home, Map as MapIcon, Volume2, VolumeX, Zap, Trophy, RotateCcw } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
 
 const panel = 'bg-[#2a1a10]/75 backdrop-blur-md border border-[#fff4e0]/10 shadow-[0_8px_24px_rgba(0,0,0,0.35)]';
@@ -14,14 +14,24 @@ export default function TopBar({
   onOpenMap,
   onOpenLeaderboard,
   onRestartLevel,
+  onGoHome,
 }) {
   const { t, lang, toggle } = useLang();
   return (
     <div className="absolute top-0 inset-x-0 p-2 sm:p-4 flex flex-col gap-2 pointer-events-none z-20">
       <div className="flex items-center justify-between gap-1.5 sm:gap-2">
-        <div className={`${panel} rounded-2xl px-3 sm:px-4 py-1.5 sm:py-2 pointer-events-auto shrink-0 max-w-[130px] sm:max-w-none`}>
-          <div className="text-[9px] sm:text-[10px] tracking-[0.2em] text-[#f7a45c] font-semibold truncate">{t.level(level)}</div>
-          <div className="text-[#fff4e0] font-bold text-xs sm:text-base leading-tight truncate">{levelName}</div>
+        <div className="flex items-center gap-1.5 pointer-events-auto">
+          <button
+            onClick={onGoHome}
+            className={`${panel} w-9 sm:w-11 h-9 sm:h-11 rounded-2xl flex items-center justify-center text-[#ffd166] active:scale-90 transition hover:bg-[#3d2517]`}
+            title={t.home}
+          >
+            <Home className="w-4 h-4 sm:w-5 sm:h-5" />
+          </button>
+          <div className={`${panel} rounded-2xl px-2.5 sm:px-4 py-1.5 sm:py-2 shrink-0 max-w-[120px] sm:max-w-none`}>
+            <div className="text-[9px] sm:text-[10px] tracking-[0.2em] text-[#f7a45c] font-semibold truncate">{t.level(level)}</div>
+            <div className="text-[#fff4e0] font-bold text-xs sm:text-base leading-tight truncate">{levelName}</div>
+          </div>
         </div>
         <div className="flex items-center gap-1 sm:gap-2 pointer-events-auto shrink-0">
           <button onClick={toggle} className={`${panel} h-9 sm:h-11 px-2 sm:px-3 rounded-2xl flex items-center justify-center text-[#fff4e0] text-xs font-bold active:scale-90 transition`}>

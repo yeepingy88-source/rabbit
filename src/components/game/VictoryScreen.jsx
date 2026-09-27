@@ -1,11 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Carrot, RotateCcw, Sparkles, Star, Trophy, Crown, Zap } from 'lucide-react';
+import { ArrowRight, Carrot, RotateCcw, Sparkles, Star, Trophy, Crown, Zap, Home } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
 
 const fmt = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
 
-export default function VictoryScreen({ level, result, onNext, onReplay, onRestartGame }) {
+export default function VictoryScreen({ level, result, onNext, onReplay, onRestartGame, onGoHome }) {
   const { t } = useLang();
   const isFinal = level >= 20;
 
@@ -124,38 +124,29 @@ export default function VictoryScreen({ level, result, onNext, onReplay, onResta
       </div>
 
       {/* Action Buttons */}
-      <div className="mt-8 flex flex-col sm:flex-row gap-3 w-full max-w-sm">
-        {isFinal ? (
-          <>
-            <button
-              onClick={onReplay}
-              className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-full bg-white text-[#5a331b] font-bold text-sm shadow active:scale-95 transition hover:bg-[#fff9f0]"
-            >
-              <RotateCcw className="w-4 h-4" /> {t.replayFinal}
-            </button>
-            <button
-              onClick={onRestartGame}
-              className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-full bg-gradient-to-b from-[#f59e0b] to-[#d97706] text-white font-extrabold text-sm shadow-lg active:scale-95 transition hover:brightness-105"
-            >
-              <Trophy className="w-4 h-4" /> {t.playAgain}
-            </button>
-          </>
-        ) : (
-          <>
-            <button
-              onClick={onReplay}
-              className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-full bg-white text-[#5a331b] font-bold text-sm shadow active:scale-95 transition hover:bg-[#fff9f0]"
-            >
-              <RotateCcw className="w-4 h-4" /> {t.replay}
-            </button>
-            <button
-              onClick={onNext}
-              className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-full bg-gradient-to-b from-[#f7a45c] to-[#e0702a] text-white font-extrabold text-sm shadow-lg active:scale-95 transition hover:brightness-105"
-            >
-              {t.next} <ArrowRight className="w-4 h-4" />
-            </button>
-          </>
-        )}
+      <div className="mt-8 flex flex-col gap-2.5 w-full max-w-sm">
+        <div className="flex gap-2.5 w-full">
+          <button
+            onClick={onReplay}
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 px-3 rounded-full bg-white/95 text-[#5a331b] font-bold text-sm shadow active:scale-95 transition hover:bg-white"
+          >
+            <RotateCcw className="w-4 h-4" /> <span>{level === 20 ? t.replayFinal : t.replay}</span>
+          </button>
+          <button
+            onClick={onNext}
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 px-3 rounded-full bg-gradient-to-b from-[#f7a45c] to-[#e0702a] text-white font-extrabold text-sm shadow-lg active:scale-95 transition hover:brightness-105"
+          >
+            <span>{t.next}</span> <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        <button
+          onClick={onGoHome || onRestartGame}
+          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-full bg-[#5a331b]/10 border border-[#5a331b]/20 text-[#5a331b] font-bold text-sm active:scale-95 transition hover:bg-[#5a331b]/20"
+        >
+          <Home className="w-4 h-4" />
+          <span>{t.homeButton}</span>
+        </button>
       </div>
     </motion.div>
   );

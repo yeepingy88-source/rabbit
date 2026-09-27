@@ -35,7 +35,14 @@ export default function GameCanvas({ stateRef, inputRef, pausedRef, onStamina, o
             else if (e === 'water') sfx.water();
             else if (e === 'fiber' || e === 'clay') sfx.material();
             else if (e === 'win') cb.current.onWin();
-            if (e !== 'win') cb.current.onCollect(e);
+            else if (e === 'beetleBite') {
+              sfx.bite();
+              cb.current.onCollect('beetleBite');
+            } else if (e === 'exhaustedByBeetle') {
+              cb.current.onCollect('exhaustedByBeetle');
+            } else if (e !== 'win') {
+              cb.current.onCollect(e);
+            }
           });
         }
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);

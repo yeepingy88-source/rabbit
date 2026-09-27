@@ -1,7 +1,7 @@
 import { drawTile } from './tiles';
-import { drawCarrot, drawBunny, drawBurrow, drawRoots, drawDrop, drawMaterial } from './characters';
+import { drawCarrot, drawBunny, drawBurrow, drawRoots, drawDrop, drawMaterial, drawBeetle } from './characters';
 
-const PARTICLE_COLORS = ['#c99461', '#8a5a33', '#e0b584', '#00f0ff'];
+const PARTICLE_COLORS = ['#c99461', '#8a5a33', '#e0b584', '#00f0ff', '#ef4444'];
 const DRILL_PARTICLE_COLORS = ['#00f0ff', '#ffffff', '#70e0ff', '#ff0055'];
 
 export function render(ctx, fog, s, w, h, t, dpr) {
@@ -41,12 +41,22 @@ export function render(ctx, fog, s, w, h, t, dpr) {
   drawCarrot(ctx, gx, gy, isFinal ? ts * 3.0 : ts * 1.9, 1.2, t);
 
   s.particles.forEach((p) => {
-    ctx.fillStyle = p.drill ? DRILL_PARTICLE_COLORS[p.c % 4] : PARTICLE_COLORS[p.c % 3];
+    ctx.fillStyle = p.drill ? DRILL_PARTICLE_COLORS[p.c % 4] : PARTICLE_COLORS[p.c % 5];
     ctx.globalAlpha = Math.min(1, p.life * 2);
     ctx.fillRect(p.x * ts - ts * 0.04, p.y * ts - ts * 0.04, ts * 0.08, ts * 0.08);
   });
   ctx.globalAlpha = 1;
+
+  // Draw Cave Beetles (Level 40+)
+  (s.beetles || []).forEach((b) => {
+    drawBeetle(ctx, b.x * ts, b.y * ts, ts, b, t);
+  });
+
+  // Bunny blink feedback during invulnerability cooldown
+  const isBlinking = s.beetleCooldown > 0 && Math.floor(t * 20) % 2 === 0;
+  if (isBlinking) ctx.globalAlpha = 0.45;
   drawBunny(ctx, s.x * ts, s.y * ts, ts, s.facing, t, s.moving, s.drillActive);
+  ctx.globalAlpha = 1;
   ctx.restore();
 
   // Fog of war

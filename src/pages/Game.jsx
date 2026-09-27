@@ -20,6 +20,7 @@ import AdPlayer from '@/components/game/AdPlayer';
 import IntroScreen from '@/components/game/IntroScreen';
 import MapPreview from '@/components/game/MapPreview';
 import VictoryScreen from '@/components/game/VictoryScreen';
+import ExhaustedScreen from '@/components/game/ExhaustedScreen';
 
 const DEFAULT_INV = {
   water: 0,
@@ -61,6 +62,7 @@ export default function Game() {
   const [showBoard, setShowBoard] = useState(false);
   const [bagReady, setBagReady] = useState(false);
   const [drillArmed, setDrillArmed] = useState(false);
+  const [exhaustedReason, setExhaustedReason] = useState('tired');
 
   // Persistent Inventory across levels & sessions
   const [inv, setInv] = useState(() => {
@@ -130,7 +132,7 @@ export default function Game() {
   pausedRef.current = phase !== 'playing' || !!mapMode || showAdModal || !!adType || showBag || showBoard;
 
   const startLevel = (n, staminaValue = 100, isReplay = false) => {
-    const clampedLevel = Math.min(20, Math.max(1, n));
+    const clampedLevel = Math.max(1, n);
     stateRef.current = createLevel(clampedLevel);
     stateRef.current.stamina = staminaValue;
     inputRef.current = { x: 0, y: 0 };
@@ -159,6 +161,26 @@ export default function Game() {
 
   const handleRestartGame = () => {
     startLevel(1, 100, true);
+  };
+
+  const handleGoHome = () => {
+    setPhase('intro');
+    setMapMode(false);
+    setShowBag(false);
+    setShowBoard(false);
+  };
+
+  const handleReviveWithBrew = () => {
+    if (!inv.brew || inv.brew <= 0) return;
+    setInv((p) => ({ ...p, brew: p.brew - 1 }));
+    if (stateRef.current) {
+      stateRef.current.stamina = 100;
+      stateRef.current.beetleCooldown = 2.5; // 2.5s grace period to escape
+    }
+    setStamina(100);
+    setPhase('playing');
+    sfx.win();
+    setHint(flash(t.brewFull));
   };
 
   const handleDig = useCallback(() => {
@@ -206,6 +228,11 @@ export default function Game() {
         setInv((p) => ({ ...p, shard: (p.shard || 0) + 1 }));
         setHint(flash(t.gotShard));
         sfx.material();
+      } else if (type === 'beetleBite') {
+        setHint(flash(t.beetleBiteHint));
+      } else if (type === 'exhaustedByBeetle') {
+        setExhaustedReason('beetle');
+        setPhase('exhausted');
       }
     },
     [t]
@@ -336,9 +363,16 @@ export default function Game() {
     setMutedState(!muted);
   };
 
-  const isFinal = level >= 20;
+  const handleStaminaChange = useCallback((st) => {
+    setStamina(st);
+    if (st <= 0 && phase === 'playing') {
+      setPhase('exhausted');
+    }
+  }, [phase]);
+
+  const isFinal = level === 20;
   const tier = Math.min(Math.floor((level - 1) / 5), t.tiers.length - 1);
-  const levelDisplayName = isFinal ? t.finalLevelName : t.tiers[tier];
+  const levelDisplayName = level >= 40 ? t.beetleTierName : (isFinal ? t.finalLevelName : t.tiers[tier]);
   const usableCount = (inv.brew || 0) + (inv.claws || 0) + (inv.drill || 0);
 
   return (
@@ -347,7 +381,7 @@ export default function Game() {
         stateRef={stateRef}
         inputRef={inputRef}
         pausedRef={pausedRef}
-        onStamina={setStamina}
+        onStamina={handleStaminaChange}
         onWin={handleWin}
         onCollect={handleCollect}
       />
@@ -364,6 +398,7 @@ export default function Game() {
             onOpenMap={openMap}
             onOpenLeaderboard={() => setShowBoard(true)}
             onRestartLevel={handleReplayLevel}
+            onGoHome={handleGoHome}
           />
 
           <Joystick inputRef={inputRef} />
@@ -417,7 +452,17 @@ export default function Game() {
         />
       )}
       {adType && <AdPlayer type={adType} onDone={finishAd} />}
-      {phase === 'intro' && <IntroScreen onStart={() => startLevel(1, 100, true)} />}
+      {phase === 'intro' && <IntroScreen onStart={(lvl = 1) => startLevel(lvl, 100, true)} />}
+      {phase === 'exhausted' && (
+        <ExhaustedScreen
+          reason={exhaustedReason}
+          level={level}
+          inv={inv}
+          onRevive={handleReviveWithBrew}
+          onReplay={handleReplayLevel}
+          onRestartGame={handleRestartGame}
+        />
+      )}
       {phase === 'won' && (
         <VictoryScreen
           level={level}
@@ -425,6 +470,7 @@ export default function Game() {
           onNext={handleNextLevel}
           onReplay={handleReplayLevel}
           onRestartGame={handleRestartGame}
+          onGoHome={handleGoHome}
         />
       )}
     </div>
