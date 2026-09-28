@@ -1,10 +1,10 @@
-import { PATH, SOFT, EXIT } from './maze';
+import { PATH, SOFT, EXIT, BEDROCK } from './maze';
 
 const hash = (x, y) => ((x * 73856093) ^ (y * 19349663)) >>> 0;
 const dot = (ctx, x, y, r) => { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill(); };
 const bits = (h, s, m) => ((h >>> s) & m) / m;
 
-function drawPath(ctx, px, py, ts, x, y) {
+function drawPath(ctx, px, py, ts, x, y, isVisited = false) {
   const h = hash(x, y);
   ctx.fillStyle = (x + y) % 2 ? '#7a4e30' : '#7e5233';
   ctx.fillRect(px, py, ts + 1, ts + 1);
@@ -12,6 +12,21 @@ function drawPath(ctx, px, py, ts, x, y) {
   for (let i = 0; i < 4; i++) dot(ctx, px + bits(h, i * 6, 63) * ts, py + bits(h, i * 6 + 3, 63) * ts, ts * (0.025 + i * 0.008));
   ctx.fillStyle = 'rgba(214,160,108,0.2)';
   dot(ctx, px + bits(h, 7, 127) * ts, py + bits(h, 13, 127) * ts, ts * 0.04);
+
+  // Revealed Footprint Trail (淡色足跡)
+  if (isVisited) {
+    ctx.fillStyle = 'rgba(254, 215, 170, 0.22)';
+    ctx.beginPath();
+    ctx.arc(px + ts * 0.5, py + ts * 0.5, ts * 0.32, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Subtle mini pawprint
+    ctx.fillStyle = 'rgba(255, 237, 213, 0.35)';
+    dot(ctx, px + ts * 0.5, py + ts * 0.54, ts * 0.07);
+    dot(ctx, px + ts * 0.42, py + ts * 0.42, ts * 0.035);
+    dot(ctx, px + ts * 0.5, py + ts * 0.38, ts * 0.035);
+    dot(ctx, px + ts * 0.58, py + ts * 0.42, ts * 0.035);
+  }
 }
 
 function drawSoft(ctx, px, py, ts, x, y) {
@@ -78,9 +93,42 @@ function drawExit(ctx, px, py, ts, t) {
   ctx.beginPath(); ctx.ellipse(px + ts / 2, py + ts * 0.92, ts * 0.4, ts * 0.12, 0, 0, Math.PI * 2); ctx.fill();
 }
 
-export function drawTile(ctx, type, px, py, ts, x, y, t) {
-  if (type === PATH) return drawPath(ctx, px, py, ts, x, y);
+function drawBedrock(ctx, px, py, ts, x, y) {
+  const h = hash(x, y);
+  // Dense dark slate/obsidian unbreakable bedrock
+  ctx.fillStyle = '#1c1917';
+  ctx.fillRect(px, py, ts + 1, ts + 1);
+
+  // Purple / dark obsidian crystalline striations
+  ctx.fillStyle = '#2e1065';
+  ctx.fillRect(px + ts * 0.1, py + ts * 0.1, ts * 0.8, ts * 0.8);
+
+  ctx.fillStyle = '#4c1d95';
+  [[0.25, 0.3, 0.22], [0.72, 0.35, 0.18], [0.4, 0.7, 0.24], [0.78, 0.75, 0.16]].forEach(([rx, ry, rr], i) => {
+    const j = bits(h, i * 4, 15) * 0.06;
+    const cx = px + (rx + j) * ts, cy = py + (ry - j) * ts;
+    dot(ctx, cx, cy, rr * ts);
+  });
+
+  // Glowing runic crystalline vein
+  ctx.strokeStyle = 'rgba(168, 85, 247, 0.45)';
+  ctx.lineWidth = ts * 0.05;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(px + ts * 0.2, py + ts * 0.8);
+  ctx.lineTo(px + ts * 0.5, py + ts * 0.5);
+  ctx.lineTo(px + ts * 0.8, py + ts * 0.2);
+  ctx.stroke();
+
+  // White glint
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+  dot(ctx, px + ts * 0.5, py + ts * 0.5, ts * 0.05);
+}
+
+export function drawTile(ctx, type, px, py, ts, x, y, t, isVisited = false) {
+  if (type === PATH) return drawPath(ctx, px, py, ts, x, y, isVisited);
   if (type === SOFT) return drawSoft(ctx, px, py, ts, x, y);
   if (type === EXIT) return drawExit(ctx, px, py, ts, t);
+  if (type === BEDROCK) return drawBedrock(ctx, px, py, ts, x, y);
   return drawStone(ctx, px, py, ts, x, y);
 }

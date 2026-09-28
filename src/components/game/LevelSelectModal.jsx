@@ -1,32 +1,40 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Star, Bug, MapPin, Sparkles, Trophy } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { X, Star, Bug, MapPin, Zap } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
+import { getLevelEntryFee, getLevelClearRefund } from '@/lib/game/stamina';
 
-export default function LevelSelectModal({ currentLevel, levelStars = {}, onSelectLevel, onClose }) {
+export default function LevelSelectModal({
+  currentLevel,
+  levelStars = {},
+  globalStamina = 100,
+  onSelectLevel,
+  onClose,
+}) {
   const { t, lang } = useLang();
   const isZh = lang === 'zh';
 
-  // Grid sizes mapped to tiers
+  // Grid dimension formula matching maze.js
   const getGridSize = (lvl) => {
-    if (lvl >= 21) return '35×35+';
-    if (lvl >= 16) return '33×33';
-    if (lvl >= 11) return '27×27';
-    if (lvl >= 6) return '21×21';
-    return '15×15';
+    const dim = Math.min(41, 15 + Math.floor((lvl - 1) / 3) * 2);
+    return `${dim}×${dim}${dim === 41 ? ' MAX' : ''}`;
   };
 
   const getTierName = (lvl) => {
-    if (lvl === 20) return isZh ? '傳奇巨蘿蔔核心' : 'Legendary Giant Carrot Core';
-    const tierIdx = Math.min(Math.floor((lvl - 1) / 5), t.tiers.length - 1);
-    return t.tiers[tierIdx];
+    if (lvl === 50) return isZh ? '傳奇核心 (50關)' : 'Legendary Core (50)';
+    if (lvl >= 40) return isZh ? '甲蟲深淵 (41×41)' : 'Beetle Abyss (41×41)';
+    if (lvl >= 31) return isZh ? '古老地核脈' : 'Ancient Core';
+    if (lvl >= 21) return isZh ? '深層巨網' : 'Deep Network';
+    if (lvl >= 11) return isZh ? '蜿蜒迷宮' : 'Winding Maze';
+    if (lvl >= 4) return isZh ? '擴展洞穴' : 'Cavern';
+    return isZh ? '溫馨起點' : 'Cozy Start';
   };
 
-  const levels = Array.from({ length: 20 }, (_, i) => i + 1);
+  const levels = Array.from({ length: 50 }, (_, i) => i + 1);
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md select-none"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -37,120 +45,116 @@ export default function LevelSelectModal({ currentLevel, levelStars = {}, onSele
         exit={{ scale: 0.92, opacity: 0, y: 16 }}
         transition={{ duration: 0.2 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-2xl max-h-[92vh] flex flex-col rounded-3xl bg-[#201209] border-2 border-[#d97706]/60 shadow-[0_24px_70px_rgba(0,0,0,0.85)] text-[#fff4e0] overflow-hidden"
+        className="relative w-full max-w-3xl max-h-[92vh] flex flex-col rounded-3xl bg-[#FFFDF9] border-2 border-amber-300 shadow-[0_24px_70px_rgba(0,0,0,0.35)] text-amber-950 overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#fff4e0]/10 bg-[#2c190d]/90">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-amber-200/80 bg-gradient-to-r from-amber-100/90 via-orange-50/90 to-amber-100/90">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-orange-500/20 border border-orange-500/40 flex items-center justify-center text-orange-400">
+            <div className="w-10 h-10 rounded-2xl bg-orange-100 border border-orange-300 flex items-center justify-center text-orange-600 shadow-sm">
               <MapPin className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-base sm:text-lg text-[#fff4e0] leading-tight">
-                {t.levelSelectTitle}
-              </h3>
-              <div className="flex items-center gap-1.5 text-[11px] text-[#f59e0b] font-semibold mt-0.5">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>{t.allUnlockedHint}</span>
+              <div className="flex items-center gap-2">
+                <h3 className="font-black text-base sm:text-lg text-amber-950 leading-tight">
+                  {t.levelSelectTitle}
+                </h3>
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                  {isZh ? '全 50 關開放測試' : 'All 50 Levels Open'}
+                </span>
+                <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1 shadow-sm">
+                  <Zap className="w-3 h-3 text-amber-500 fill-amber-500" />
+                  <span>{globalStamina} / 100</span>
+                </span>
               </div>
+              <p className="text-[11px] text-amber-850 font-bold mt-0.5">
+                {isZh ? '全 50 關自由測試與自選 · 自由選擇喜好地圖尺寸' : 'Select from all 50 levels · Freely test any map size'}
+              </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-[#fff4e0] active:scale-90 transition border border-white/10 cursor-pointer"
+            className="w-10 h-10 rounded-full bg-amber-200/60 hover:bg-amber-200 text-amber-900 flex items-center justify-center active:scale-90 transition border border-amber-300 cursor-pointer shadow-sm"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Level Cards Grid */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+        {/* Level Cards Grid (All 50 Levels Clickable) */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-gradient-to-b from-amber-50/20 to-orange-50/20">
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2.5 sm:gap-3">
             {levels.map((lvl) => {
               const isCurrent = currentLevel === lvl;
               const stars = levelStars[lvl] || 0;
               const gridSize = getGridSize(lvl);
               const tierName = getTierName(lvl);
-              const isFinal = lvl === 20;
+              const isBeetle = lvl >= 40;
+              const fee = getLevelEntryFee(lvl);
+              const refund = getLevelClearRefund(lvl);
 
               return (
                 <button
                   key={lvl}
                   type="button"
-                  onClick={() => {
-                    onSelectLevel(lvl);
-                  }}
-                  className={`relative p-3 rounded-2xl flex flex-col items-center justify-between text-center transition-all duration-200 active:scale-95 border cursor-pointer ${
+                  onClick={() => onSelectLevel(lvl)}
+                  className={`relative p-3 rounded-2xl flex flex-col items-center justify-between text-center transition-all duration-200 active:scale-95 border-2 cursor-pointer ${
                     isCurrent
-                      ? 'bg-gradient-to-b from-orange-600 to-amber-700 border-yellow-300 shadow-[0_0_20px_rgba(245,158,11,0.5)] ring-2 ring-yellow-400/80 scale-[1.03]'
-                      : isFinal
-                      ? 'bg-gradient-to-b from-[#78350f] to-[#451a03] border-amber-500/60 hover:border-amber-400 shadow-md'
-                      : 'bg-[#2b170c]/90 hover:bg-[#381e0f] border-[#d97706]/25 hover:border-[#d97706]/60 shadow'
+                      ? 'bg-gradient-to-b from-amber-100 to-orange-100 border-orange-500 shadow-md ring-2 ring-orange-400/70 scale-[1.02]'
+                      : isBeetle
+                      ? 'bg-gradient-to-b from-rose-50 to-orange-50 border-rose-300 hover:border-rose-400 shadow-sm'
+                      : 'bg-white hover:bg-amber-50/50 border-amber-200 hover:border-amber-400 shadow-sm'
                   }`}
                 >
                   {isCurrent && (
-                    <span className="absolute -top-2 px-2 py-0.5 rounded-full bg-yellow-400 text-black text-[9px] font-black tracking-wider uppercase shadow">
+                    <span className="absolute -top-2.5 px-2 py-0.5 rounded-full bg-orange-500 text-white text-[9px] font-black tracking-wider uppercase shadow">
                       {t.currentLevelBadge}
                     </span>
                   )}
 
-                  <div className="text-xl sm:text-2xl font-black text-white leading-none mt-1">
-                    {lvl}
+                  <div className="flex items-center justify-center gap-1 mt-1">
+                    <span className="text-xl sm:text-2xl font-black text-amber-950 leading-none">
+                      {lvl}
+                    </span>
+                    {isBeetle && <Bug className="w-3.5 h-3.5 text-rose-500" />}
                   </div>
 
-                  <div className="my-1.5 w-full">
-                    <div className="text-[11px] font-bold text-amber-200 truncate">{tierName}</div>
-                    <div className="text-[10px] font-semibold text-[#ffd1a3]/75 bg-black/30 rounded-md py-0.5 px-1.5 mt-1 inline-block">
+                  <div className="my-1 w-full">
+                    <div className="text-[11px] font-bold text-amber-900 truncate">{tierName}</div>
+                    <div className="text-[10px] font-black text-orange-700 bg-orange-100 rounded-md py-0.5 px-1.5 mt-0.5 inline-block border border-orange-200">
                       {gridSize}
                     </div>
                   </div>
 
+                  {/* Entry Fee Badge */}
+                  <div className="mb-1 text-[10px] font-extrabold">
+                    {fee === 0 ? (
+                      <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                        {isZh ? '🆓 0 體力' : 'Free'}
+                      </span>
+                    ) : (
+                      <span className="text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                        ⚡ -{fee} <span className="text-[9px] text-emerald-600 font-bold">(返{refund})</span>
+                      </span>
+                    )}
+                  </div>
+
                   {/* Stars Earned */}
-                  <div className="flex items-center gap-0.5 mt-1">
+                  <div className="flex items-center gap-0.5 mt-0.5">
                     {[1, 2, 3].map((s) => (
                       <Star
                         key={s}
-                        className={`w-3.5 h-3.5 ${s <= stars ? 'text-yellow-400 fill-yellow-400' : 'text-stone-600'}`}
+                        className={`w-3.5 h-3.5 ${
+                          s <= stars
+                            ? 'text-[#f59e0b] drop-shadow-[0_1px_4px_rgba(245,158,11,0.5)]'
+                            : 'text-stone-300'
+                        }`}
+                        fill={s <= stars ? '#f59e0b' : 'none'}
                       />
                     ))}
                   </div>
                 </button>
               );
             })}
-          </div>
-
-          {/* Special Test Tier: Level 40 Cave Beetles */}
-          <div className="mt-4 pt-4 border-t border-[#fff4e0]/10">
-            <button
-              type="button"
-              onClick={() => {
-                onSelectLevel(40);
-              }}
-              className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-[#450a0a] via-[#1c0808] to-[#450a0a] border-2 border-red-500/50 hover:border-red-400 flex items-center justify-between text-left shadow-lg active:scale-98 transition group cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-red-950 border border-red-500/60 flex items-center justify-center text-red-400 group-hover:scale-110 transition">
-                  <Bug className="w-6 h-6 animate-pulse" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm sm:text-base font-extrabold text-white">
-                      {isZh ? '第 40 關 · 甲蟲深淵 (巡邏害蟲)' : 'Level 40 · Cave Beetles Abyss'}
-                    </span>
-                    <span className="text-[10px] font-bold bg-red-600 text-white px-2 py-0.5 rounded-full">
-                      35×35
-                    </span>
-                  </div>
-                  <p className="text-xs text-red-200/70 mt-0.5">
-                    {isZh ? '測試地底巡邏甲蟲巡邏與規避機制' : 'Test subterranean cave beetle patrol and evasion'}
-                  </p>
-                </div>
-              </div>
-              <span className="px-3.5 py-1.5 rounded-xl bg-red-600 text-white font-extrabold text-xs shadow group-hover:bg-red-500 transition">
-                {isZh ? '立即進入' : 'Test Now'}
-              </span>
-            </button>
           </div>
         </div>
       </motion.div>

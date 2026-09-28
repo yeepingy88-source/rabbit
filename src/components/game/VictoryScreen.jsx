@@ -1,19 +1,34 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Carrot, RotateCcw, Sparkles, Star, Trophy, Crown, Zap, Home, MapPin } from 'lucide-react';
+import { ArrowRight, Carrot, RotateCcw, Sparkles, Star, Trophy, Crown, Zap, Home, MapPin, Tv, CheckCircle2 } from 'lucide-react';
 import { useLang } from '@/lib/i18n';
 
 const fmt = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
 
-export default function VictoryScreen({ level, result, onNext, onReplay, onRestartGame, onGoHome, onOpenLevelSelect }) {
-  const { t } = useLang();
-  const isFinal = level >= 20;
+export default function VictoryScreen({
+  level,
+  result,
+  clearRefund = 0,
+  carrotsDoubled = false,
+  onDoubleCarrots,
+  onNext,
+  onReplay,
+  onRestartGame,
+  onGoHome,
+  onOpenLevelSelect,
+}) {
+  const { t, lang } = useLang();
+  const isZh = lang === 'zh';
+  const isFinal = level >= 50;
+
+  const currentCarrots = carrotsDoubled ? (result.carrots * 2) : result.carrots;
 
   const stats = [
     [t.statTime, fmt(result.time)],
     [t.statDigs, result.digs],
-    [t.statCarrots, result.carrots],
+    [t.statCarrots, currentCarrots],
     [t.statWater, result.water],
+    [isZh ? '📦 素材' : '📦 Mat', result.materials || 0],
   ];
 
   return (
@@ -62,7 +77,7 @@ export default function VictoryScreen({ level, result, onNext, onReplay, onResta
       <div className="mt-6 flex items-center justify-center gap-2">
         {isFinal && <Trophy className="w-5 h-5 text-[#eab308]" />}
         <p className="text-xs tracking-[0.35em] text-[#a0643a] font-bold uppercase">
-          {isFinal ? '🌟 終極挑戰達成 · FINALE' : t.levelDone(level)}
+          {isFinal ? (isZh ? '🌟 終極第 50 關達成 · 傳奇通關' : '🌟 FINALE · LEVEL 50 CONQUERED') : t.levelDone(level)}
         </p>
         {isFinal && <Trophy className="w-5 h-5 text-[#eab308]" />}
       </div>
@@ -75,15 +90,19 @@ export default function VictoryScreen({ level, result, onNext, onReplay, onResta
         {isFinal ? t.grandWinTitle : t.winTitle}
       </h2>
 
-      <p className="mt-3 max-w-sm text-sm text-[#8a6a50] leading-relaxed">
+      <p className="mt-3 max-w-sm text-sm text-[#8a6a50] leading-relaxed font-medium">
         {isFinal ? t.grandWinStory : t.winStory}
       </p>
 
-      {/* Stamina Bonus Banner for non-final levels */}
-      {!isFinal && (
-        <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#fef3c7] border border-[#fde68a] text-[11px] font-bold text-[#b45309]">
-          <Zap className="w-3.5 h-3.5 fill-[#d97706]" />
-          <span>體力跨關卡繼承：當前剩餘體力 + 10 勝利獎勵（上限 100）</span>
+      {/* Stamina Refund Banner */}
+      {clearRefund > 0 && (
+        <div className="mt-3 inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-100/90 border border-emerald-300 text-xs font-black text-emerald-900 shadow-sm">
+          <Zap className="w-3.5 h-3.5 text-emerald-600 fill-emerald-600" />
+          <span>
+            {isZh
+              ? `⚡ 通關成功！已退還 +${clearRefund} 全域體力`
+              : `⚡ Victory! Refunded +${clearRefund} Stamina`}
+          </span>
         </div>
       )}
 
@@ -113,21 +132,62 @@ export default function VictoryScreen({ level, result, onNext, onReplay, onResta
         </div>
       </div>
 
-      {/* Level Stats */}
-      <div className="mt-5 grid grid-cols-4 gap-2 w-full max-w-sm">
+      {/* Dynamic Star Rating Details */}
+      <div className="mt-3 flex items-center justify-center gap-2 text-[11px] font-bold text-amber-900 bg-white/70 py-1.5 px-3 rounded-xl border border-amber-200/80 max-w-sm">
+        <span className={result.stars >= 1 ? 'text-amber-700' : 'text-stone-400'}>⭐ {isZh ? '通關' : 'Exit'}</span>
+        <span>•</span>
+        <span className={result.stars >= 2 ? 'text-amber-700' : 'text-stone-400'}>
+          ⭐⭐ {isZh ? `步行 ≤${result.target2 || 25}s` : `Walk ≤${result.target2 || 25}s`}
+        </span>
+        <span>•</span>
+        <span className={result.stars >= 3 ? 'text-amber-700' : 'text-stone-400'}>
+          ⭐⭐⭐ {isZh ? `捷徑 ≤${result.target3 || 15}s` : `Speed ≤${result.target3 || 15}s`}
+        </span>
+      </div>
+
+      {/* Level Stats (5 items: Time, Digs, Carrots, Water, Materials) */}
+      <div className="mt-5 grid grid-cols-5 gap-1.5 sm:gap-2 w-full max-w-sm sm:max-w-md">
         {stats.map(([k, v]) => (
-          <div key={k} className="rounded-2xl bg-white/80 backdrop-blur-sm py-3.5 shadow-sm border border-[#e5cfac]/40">
-            <div className="text-xl sm:text-2xl font-black text-[#4a2c18] tabular-nums">{v}</div>
-            <div className="text-xs text-[#a0643a] font-semibold mt-0.5">{k}</div>
+          <div key={k} className="rounded-2xl bg-white/80 backdrop-blur-sm py-3 px-1 shadow-sm border border-[#e5cfac]/40">
+            <div className="text-lg sm:text-2xl font-black text-[#4a2c18] tabular-nums">{v}</div>
+            <div className="text-[10px] sm:text-xs text-[#a0643a] font-semibold mt-0.5 truncate">{k}</div>
           </div>
         ))}
       </div>
 
+      {/* Monetization: Rewarded Ad Carrot Doubler Button */}
+      <div className="mt-6 w-full max-w-sm">
+        {carrotsDoubled ? (
+          <div className="py-2.5 px-4 rounded-2xl bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-black flex items-center justify-center gap-1.5 shadow-sm">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span>{isZh ? `已獲得雙倍胡蘿蔔！(+${result.carrots} 🥕)` : `Carrots Doubled! (+${result.carrots} 🥕)`}</span>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={onDoubleCarrots}
+            disabled={!result.carrots || result.carrots <= 0}
+            className={`w-full py-3 px-4 rounded-2xl font-black text-sm flex items-center justify-center gap-2 shadow-md active:scale-95 transition cursor-pointer ${
+              result.carrots > 0
+                ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-600 hover:to-orange-600 text-white ring-2 ring-orange-300/50'
+                : 'bg-stone-200 text-stone-500 cursor-not-allowed opacity-60'
+            }`}
+          >
+            <Tv className="w-4 h-4" />
+            <span>
+              {isZh
+                ? `📺 看廣告 蘿蔔×2 (額外獲贈 +${result.carrots || 0} 🥕)`
+                : `📺 Watch Ad: 2× Carrots (+${result.carrots || 0} 🥕)`}
+            </span>
+          </button>
+        )}
+      </div>
+
       {/* Action Buttons */}
-      <div className="mt-8 flex flex-col gap-3 w-full max-w-sm">
+      <div className="mt-3 flex flex-col gap-2.5 w-full max-w-sm">
         <button
           onClick={onNext}
-          className="w-full flex items-center justify-center gap-2.5 py-4 px-6 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-lg shadow-lg ring-2 ring-orange-300/50 active:scale-95 transition hover:brightness-105"
+          className="w-full flex items-center justify-center gap-2.5 py-4 px-6 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-extrabold text-lg shadow-lg ring-2 ring-orange-300/50 active:scale-95 transition hover:brightness-105 cursor-pointer"
         >
           <span>{t.next}</span> <ArrowRight className="w-5 h-5" strokeWidth={2.8} />
         </button>
@@ -135,14 +195,14 @@ export default function VictoryScreen({ level, result, onNext, onReplay, onResta
         <div className="flex gap-2.5 w-full">
           <button
             onClick={onReplay}
-            className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-white/95 text-[#5a331b] font-bold text-base shadow active:scale-95 transition hover:bg-white border border-[#5a331b]/15"
+            className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-white/95 text-[#5a331b] font-bold text-sm shadow active:scale-95 transition hover:bg-white border border-[#5a331b]/15 cursor-pointer"
           >
-            <RotateCcw className="w-4 h-4" /> <span>{level === 20 ? t.replayFinal : t.replay}</span>
+            <RotateCcw className="w-4 h-4" /> <span>{level >= 50 ? t.replayFinal : t.replay}</span>
           </button>
           {onOpenLevelSelect && (
             <button
               onClick={onOpenLevelSelect}
-              className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-2xl bg-[#FFF8EB] border-2 border-[#ea580c]/30 text-[#9a3412] font-extrabold text-base shadow active:scale-95 transition hover:bg-white"
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-[#FFF8EB] border-2 border-[#ea580c]/30 text-[#9a3412] font-extrabold text-sm shadow active:scale-95 transition hover:bg-white cursor-pointer"
             >
               <MapPin className="w-4 h-4 text-[#ea580c]" />
               <span>{t.selectLevel}</span>
@@ -152,7 +212,7 @@ export default function VictoryScreen({ level, result, onNext, onReplay, onResta
 
         <button
           onClick={onGoHome || onRestartGame}
-          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-black/5 hover:bg-black/10 text-[#5a331b]/80 font-semibold text-sm active:scale-95 transition"
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-black/5 hover:bg-black/10 text-[#5a331b]/80 font-semibold text-xs active:scale-95 transition cursor-pointer"
         >
           <Home className="w-4 h-4" />
           <span>{t.home}</span>

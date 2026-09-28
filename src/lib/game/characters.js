@@ -143,12 +143,28 @@ export function drawMaterial(ctx, x, y, type, ts, t) {
   }
 }
 
-export function drawBunny(ctx, x, y, ts, facing, t, moving, drillActive = false) {
+export function drawBunny(ctx, x, y, ts, facing, t, moving, drillActive = false, facingLeft = false, smoothTilt = 0) {
   const s = ts * 0.36, bob = moving ? Math.sin(t * 18) * 0.06 : 0;
   ctx.save(); ctx.translate(x, y);
-  ctx.fillStyle = 'rgba(0,0,0,0.28)'; oval(ctx, 0, s * 0.25, s * 0.95, s * 1.05);
-  ctx.rotate(Math.atan2(facing.y, facing.x) + Math.PI / 2);
-  ctx.scale(1 + bob, 1 - bob);
+
+  // Ground shadow beneath the bunny (stable on ground)
+  ctx.fillStyle = 'rgba(0,0,0,0.28)';
+  oval(ctx, 0, s * 0.2, s * 0.8, s * 0.5);
+
+  // Horizontal mirror flip: scaleX(-1) when moving left, scaleX(1) when moving right
+  const isLeft = facingLeft !== undefined ? facingLeft : ((facing.x || 0) < 0);
+  ctx.scale(isLeft ? -1 : 1, 1);
+
+  // Smooth forward angle (prohibiting upside-down flip)
+  // tilt is in [-π/2, π/2], representing angle relative to forward horizontal
+  const tilt = smoothTilt !== undefined ? smoothTilt : (facing?.y ? Math.atan2(facing.y, Math.abs(facing.x || 0.001)) : 0);
+  ctx.rotate(tilt);
+
+  // Rotate base top-down sprite (+Math.PI / 2) so nose (originally at -Y) points forward along +X
+  ctx.rotate(Math.PI / 2);
+
+  // Bobbing hop animation along length and width
+  ctx.scale(1 - bob, 1 + bob);
 
   // If Rock Breaker Drill is active: radiant energy aura
   if (drillActive) {

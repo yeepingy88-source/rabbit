@@ -12,35 +12,35 @@ export default function ExhaustedScreen({ reason, level, inv, onRevive, onReplay
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="absolute inset-0 z-50 bg-[#120a05]/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
+      className="absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
     >
       <motion.div
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         transition={{ type: 'spring', damping: 20 }}
-        className="w-full max-w-sm rounded-[32px] bg-gradient-to-b from-[#2a1710] to-[#1c0e08] border-2 border-[#ef4444]/40 shadow-[0_20px_50px_rgba(239,68,68,0.25)] p-6 text-center text-[#fff4e0]"
+        className="w-full max-w-sm rounded-[32px] bg-[#FFFDF9] border-2 border-amber-300 shadow-[0_24px_70px_rgba(0,0,0,0.25)] p-6 text-center text-amber-950"
       >
         {/* Warning Icon Badge */}
-        <div className="mx-auto w-20 h-20 rounded-full bg-[#ef4444]/20 border-2 border-[#ef4444]/60 flex items-center justify-center shadow-[0_0_30px_rgba(239,68,68,0.4)]">
-          <AlertTriangle className="w-10 h-10 text-[#ef4444] animate-pulse" />
+        <div className="mx-auto w-20 h-20 rounded-full bg-orange-100 border-2 border-orange-300 flex items-center justify-center shadow-md">
+          <AlertTriangle className="w-10 h-10 text-orange-600 animate-pulse" />
         </div>
 
         {/* Level & Title */}
-        <div className="mt-4 text-[11px] font-bold tracking-[0.25em] text-[#f87171] uppercase">
+        <div className="mt-4 text-xs font-black tracking-[0.25em] text-orange-700 uppercase">
           {t.level(level)}
         </div>
-        <h2 className="mt-1 text-2xl sm:text-3xl font-black text-[#fff4e0]">
+        <h2 className="mt-1 text-2xl sm:text-3xl font-black text-amber-950">
           {t.exhaustedTitle}
         </h2>
 
         {/* Story / Description */}
-        <p className="mt-2 text-xs sm:text-sm text-[#fca5a5] leading-relaxed">
+        <p className="mt-2 text-xs sm:text-sm text-amber-900 leading-relaxed font-medium">
           {isBeetle ? t.exhaustedByBeetleStory : t.exhaustedStory}
         </p>
 
         {/* Tactical Tip */}
-        <div className="mt-4 rounded-2xl bg-[#3f1d18]/60 border border-[#f87171]/25 p-3 text-left">
-          <div className="text-[11px] text-[#fed7aa] font-semibold leading-relaxed">
+        <div className="mt-4 rounded-2xl bg-amber-50 border border-amber-200 p-3 text-left">
+          <div className="text-[11px] text-amber-950 font-semibold leading-relaxed">
             {t.beetleEvadeTip}
           </div>
         </div>
@@ -50,16 +50,16 @@ export default function ExhaustedScreen({ reason, level, inv, onRevive, onReplay
           {hasBrew && (
             <button
               onClick={onRevive}
-              className="w-full py-3.5 px-4 rounded-full bg-gradient-to-r from-[#10b981] to-[#059669] text-white font-black text-sm shadow-[0_8px_20px_rgba(16,185,129,0.35)] active:scale-95 transition flex items-center justify-center gap-2 hover:brightness-110"
+              className="w-full py-3.5 px-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-sm shadow-md active:scale-95 transition flex items-center justify-center gap-2 hover:brightness-105 cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 text-[#a7f3d0]" />
+              <Sparkles className="w-4 h-4 text-emerald-100" />
               <span>{t.reviveWithBrew(inv.brew)}</span>
             </button>
           )}
 
           <button
             onClick={onReplay}
-            className="w-full py-3.5 px-4 rounded-full bg-gradient-to-b from-[#f7a45c] to-[#e0702a] text-white font-bold text-sm shadow-[0_8px_20px_rgba(240,138,60,0.35)] active:scale-95 transition flex items-center justify-center gap-2 hover:brightness-105"
+            className="w-full py-3.5 px-4 rounded-full bg-orange-500 hover:bg-orange-600 text-white font-black text-sm shadow-md active:scale-95 transition flex items-center justify-center gap-2 cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" />
             <span>{t.retryLevel}</span>
@@ -68,16 +68,16 @@ export default function ExhaustedScreen({ reason, level, inv, onRevive, onReplay
           {onOpenLevelSelect && (
             <button
               onClick={onOpenLevelSelect}
-              className="w-full py-3 px-4 rounded-full bg-[#FFF8EB] border-2 border-[#ea580c]/30 text-[#9a3412] font-extrabold text-sm active:scale-95 transition hover:bg-white flex items-center justify-center gap-2 shadow"
+              className="w-full py-3 px-4 rounded-full bg-[#FFF8EB] border-2 border-orange-300 text-orange-900 font-extrabold text-sm active:scale-95 transition hover:bg-white flex items-center justify-center gap-2 shadow-sm cursor-pointer"
             >
-              <MapPin className="w-4 h-4 text-[#ea580c]" />
+              <MapPin className="w-4 h-4 text-orange-600" />
               <span>{t.selectLevel}</span>
             </button>
           )}
 
           <button
             onClick={onRestartGame}
-            className="w-full py-2.5 px-4 rounded-full bg-[#3d2417] text-[#fed7aa] font-semibold text-xs active:scale-95 transition hover:bg-[#4d2d1d] flex items-center justify-center gap-1.5"
+            className="w-full py-2.5 px-4 rounded-full bg-amber-100 text-amber-900 font-bold text-xs active:scale-95 transition hover:bg-amber-200 border border-amber-200 flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <Home className="w-3.5 h-3.5" />
             <span>{t.restartGame}</span>

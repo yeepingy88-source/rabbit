@@ -10,14 +10,14 @@ export const FURNITURE_ITEMS = [
     key: 'bed',
     cost: 5,
     icon: Bed,
-    color: '#f59e0b',
+    color: '#d97706',
   },
   {
     id: 'lamp',
     key: 'lamp',
     cost: 8,
     icon: Flame,
-    color: '#06b6d4',
+    color: '#0891b2',
   },
   {
     id: 'clock',
@@ -31,7 +31,7 @@ export const FURNITURE_ITEMS = [
     key: 'rug',
     cost: 15,
     icon: Flower2,
-    color: '#ec4899',
+    color: '#db2777',
   },
 ];
 
@@ -88,7 +88,7 @@ export default function CozyRoomModal({ totalCarrots, onUpdateCarrots, onClose }
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-md"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -99,17 +99,17 @@ export default function CozyRoomModal({ totalCarrots, onUpdateCarrots, onClose }
         exit={{ scale: 0.92, opacity: 0, y: 16 }}
         transition={{ duration: 0.22 }}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-xl max-h-[92vh] flex flex-col rounded-3xl bg-[#1e120a] border-2 border-orange-500/40 shadow-[0_24px_70px_rgba(0,0,0,0.85)] text-[#fff4e0] overflow-hidden"
+        className="relative w-full max-w-xl max-h-[92vh] flex flex-col rounded-3xl bg-[#FFFDF9] border-2 border-amber-300 shadow-[0_24px_70px_rgba(0,0,0,0.35)] text-amber-950 overflow-hidden"
       >
-        {/* Top Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#fff4e0]/10 bg-[#2b180d]/90">
+        {/* Bright Warm Top Header */}
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-amber-200/80 bg-gradient-to-r from-amber-100/90 via-orange-50/90 to-amber-100/90">
           <div className="flex items-center gap-2.5">
             <span className="text-2xl">🏡</span>
             <div>
-              <h3 className="font-extrabold text-base sm:text-lg text-[#fff4e0] leading-tight">
+              <h3 className="font-extrabold text-base sm:text-lg text-amber-950 leading-tight">
                 {t.cozyRoomTitle}
               </h3>
-              <p className="text-[11px] text-amber-200/75 font-medium mt-0.5">
+              <p className="text-[11px] text-amber-800/80 font-medium mt-0.5">
                 {t.cozyRoomSub}
               </p>
             </div>
@@ -117,15 +117,15 @@ export default function CozyRoomModal({ totalCarrots, onUpdateCarrots, onClose }
 
           <div className="flex items-center gap-3">
             {/* Carrot Currency Pill */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-950/70 border border-orange-500/50 shadow-inner">
-              <Carrot className="w-4 h-4 text-orange-400" />
-              <span className="font-black text-sm text-orange-200">{totalCarrots}</span>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-100 border border-orange-300 shadow-sm">
+              <Carrot className="w-4 h-4 text-orange-600" />
+              <span className="font-black text-sm text-orange-800">{totalCarrots}</span>
             </div>
 
             <button
               type="button"
               onClick={onClose}
-              className="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-[#fff4e0] active:scale-90 transition border border-white/10 cursor-pointer"
+              className="w-9 h-9 rounded-full bg-amber-200/60 hover:bg-amber-200 flex items-center justify-center text-amber-900 active:scale-90 transition border border-amber-300 cursor-pointer shadow-sm"
             >
               <X className="w-5 h-5" />
             </button>
@@ -133,7 +133,7 @@ export default function CozyRoomModal({ totalCarrots, onUpdateCarrots, onClose }
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4 bg-gradient-to-b from-amber-50/30 to-orange-50/30">
           {/* Purchase Toast */}
           <AnimatePresence>
             {purchaseToast && (
@@ -141,110 +141,118 @@ export default function CozyRoomModal({ totalCarrots, onUpdateCarrots, onClose }
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="py-2 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold text-xs text-center shadow-lg"
+                className="py-2 px-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black text-xs text-center shadow-md"
               >
                 {purchaseToast}
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Interactive Room Illustration Window */}
+          {/* Interactive Room Illustration Window (Animal Crossing Cheerful Room Style) */}
           <div
             onClick={triggerBunnyHappy}
-            className="relative w-full h-56 sm:h-64 rounded-2xl bg-gradient-to-b from-[#2e190e] via-[#3a2012] to-[#25130a] border-2 border-amber-800/60 overflow-hidden shadow-inner cursor-pointer select-none group"
+            className="relative w-full h-56 sm:h-64 rounded-2xl bg-[#FAF3E0] border-2 border-amber-300/80 overflow-hidden shadow-inner cursor-pointer select-none group"
             title={isZh ? "點擊雪波撫摸互動" : "Click Snowpaw to pet!"}
           >
-            {/* Atmospheric Background & Cave Arch */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(251,191,36,0.12),transparent_70%)] pointer-events-none" />
+            {/* Gentle Warm Sunshine Rays & Honey Room Lighting */}
+            <div className="absolute inset-0 bg-gradient-to-b from-[#FFFDF9] via-[#FAF3E0] to-[#F5E6CC] pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(254,240,138,0.35),transparent_70%)] pointer-events-none" />
 
-            {/* Fairy Lights Hanging from Ceiling */}
+            {/* Cheerful Fairy Lights Hanging from Ceiling */}
             <div className="absolute top-2 inset-x-6 flex justify-around pointer-events-none">
               {[1, 2, 3, 4, 5, 6].map((i) => (
                 <div key={i} className="flex flex-col items-center">
-                  <div className="w-[1px] h-3 bg-amber-900/60" />
-                  <div className="w-2 h-2 rounded-full bg-amber-300 shadow-[0_0_8px_#fde047] animate-pulse" />
+                  <div className="w-[1px] h-3.5 bg-amber-400" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_10px_#f59e0b] animate-pulse" />
                 </div>
+              ))}
+            </div>
+
+            {/* Honey Wooden Flooring Line */}
+            <div className="absolute bottom-0 inset-x-0 h-16 bg-[#EDD9B6] border-t-2 border-amber-300/60 pointer-events-none flex justify-around">
+              {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                <div key={i} className="w-[1px] h-full bg-amber-400/40" />
               ))}
             </div>
 
             {/* 3. Carrot Wall Clock (if owned) */}
             {hasClock && (
-              <div className="absolute top-7 left-8 flex flex-col items-center pointer-events-none animate-bounce-subtle">
-                <div className="relative w-9 h-11 rounded-b-full bg-orange-600 border border-amber-300/80 shadow-md flex items-center justify-center">
-                  <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center border border-orange-800">
-                    <div className="w-2 h-[1px] bg-stone-800 origin-left rotate-45" />
+              <div className="absolute top-7 left-8 flex flex-col items-center pointer-events-none">
+                <div className="relative w-9 h-11 rounded-b-full bg-orange-500 border-2 border-orange-600 shadow-md flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center border border-orange-400 shadow-inner">
+                    <div className="w-2 h-[1.5px] bg-stone-800 origin-left rotate-45" />
                   </div>
                   <div className="absolute -top-1 w-2.5 h-1.5 rounded-full bg-emerald-500" />
                 </div>
                 {/* Pendulum */}
-                <div className="w-[1.5px] h-4 bg-amber-400 origin-top animate-pendulum flex justify-center">
-                  <div className="w-2 h-2 rounded-full bg-amber-300 self-end shadow" />
+                <div className="w-[1.5px] h-4 bg-orange-400 origin-top animate-pendulum flex justify-center">
+                  <div className="w-2 h-2 rounded-full bg-amber-400 self-end shadow" />
                 </div>
               </div>
             )}
 
             {/* 2. Glowing Mushroom Lamp (if owned) */}
             {hasLamp && (
-              <div className="absolute bottom-12 right-7 flex flex-col items-center pointer-events-none">
+              <div className="absolute bottom-11 right-7 flex flex-col items-center pointer-events-none">
                 {/* Spores / Ambient Teal Glow */}
-                <div className="w-16 h-16 -mb-10 rounded-full bg-cyan-400/25 blur-md animate-pulse" />
+                <div className="w-16 h-16 -mb-10 rounded-full bg-cyan-400/30 blur-md animate-pulse" />
                 <div className="relative flex items-center justify-center">
-                  <div className="w-10 h-7 rounded-t-full bg-gradient-to-r from-teal-400 to-cyan-400 shadow-[0_0_15px_#2dd4bf] border border-cyan-200/80 flex items-center justify-around px-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/80" />
-                    <div className="w-1 h-1 rounded-full bg-white/70 mb-1" />
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/80" />
+                  <div className="w-11 h-8 rounded-t-full bg-gradient-to-r from-teal-400 to-cyan-400 shadow-[0_0_15px_#2dd4bf] border border-cyan-200 flex items-center justify-around px-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                    <div className="w-1 h-1 rounded-full bg-white mb-1" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-white" />
                   </div>
                 </div>
-                <div className="w-2.5 h-6 bg-stone-200 rounded-b-md shadow" />
-                <div className="w-8 h-2 rounded-full bg-stone-700 shadow" />
+                <div className="w-2.5 h-6 bg-stone-300 rounded-b-md shadow" />
+                <div className="w-8 h-2 rounded-full bg-stone-500 shadow" />
               </div>
             )}
 
             {/* 4. Fluffy Petal Rug (if owned) */}
             {hasRug && (
-              <div className="absolute bottom-4 inset-x-0 mx-auto w-48 sm:w-56 h-14 rounded-[50%] bg-gradient-to-r from-pink-400/40 via-rose-300/40 to-pink-400/40 border border-pink-300/40 shadow-md flex items-center justify-center pointer-events-none">
-                <div className="w-36 sm:w-44 h-9 rounded-[50%] border-2 border-dashed border-pink-200/50" />
+              <div className="absolute bottom-3 inset-x-0 mx-auto w-52 sm:w-60 h-14 rounded-[50%] bg-gradient-to-r from-pink-300/80 via-rose-200/90 to-pink-300/80 border-2 border-pink-400/50 shadow-md flex items-center justify-center pointer-events-none">
+                <div className="w-40 sm:w-48 h-9 rounded-[50%] border-2 border-dashed border-pink-400/60" />
               </div>
             )}
 
             {/* 1. Bed & Snowpaw Bunny */}
-            <div className="absolute bottom-5 inset-x-0 mx-auto flex flex-col items-center">
+            <div className="absolute bottom-4 inset-x-0 mx-auto flex flex-col items-center">
               {hasBed ? (
                 /* Cozy Straw Bed */
                 <div className="relative flex flex-col items-center">
                   {/* Bed Frame & Fluffy Straw */}
-                  <div className="w-36 sm:w-44 h-16 rounded-3xl bg-amber-800 border-2 border-amber-600/80 shadow-lg flex items-center justify-center overflow-hidden">
-                    <div className="absolute inset-1 rounded-2xl bg-amber-300/80 border border-amber-400 flex items-center justify-center">
+                  <div className="w-38 sm:w-46 h-16 rounded-3xl bg-amber-700 border-2 border-amber-600 shadow-md flex items-center justify-center overflow-hidden">
+                    <div className="absolute inset-1 rounded-2xl bg-amber-200 border border-amber-300 flex items-center justify-center">
                       {/* Quilt */}
-                      <div className="absolute right-0 inset-y-0 w-20 bg-orange-400/90 rounded-r-2xl border-l border-orange-500/50 flex items-center justify-center">
-                        <Carrot className="w-4 h-4 text-orange-200 rotate-45 opacity-70" />
+                      <div className="absolute right-0 inset-y-0 w-22 bg-orange-400 rounded-r-2xl border-l-2 border-orange-300 flex items-center justify-center">
+                        <Carrot className="w-5 h-5 text-white/90 rotate-45" />
                       </div>
                     </div>
                   </div>
 
                   {/* Sleeping Snowpaw inside Bed */}
-                  <div className="absolute -top-6 left-6 flex items-center gap-1.5">
+                  <div className="absolute -top-7 left-6 flex items-center gap-1.5">
                     {/* Pillow */}
-                    <div className="w-10 h-7 rounded-2xl bg-amber-100 shadow border border-amber-200 -mr-3 z-0" />
+                    <div className="w-11 h-8 rounded-2xl bg-white shadow-md border border-amber-200 -mr-3 z-0" />
                     {/* Snowpaw curled up */}
                     <div className="relative z-10 flex flex-col items-center">
-                      <div className="w-12 h-10 rounded-full bg-white shadow-md border border-stone-200 flex items-center justify-center relative">
+                      <div className="w-13 h-11 rounded-full bg-white shadow-lg border-2 border-stone-200 flex items-center justify-center relative">
                         {/* Closed happy eyes */}
-                        <div className="text-[10px] font-black text-stone-700 tracking-wider">
+                        <div className="text-[11px] font-black text-amber-950 tracking-wider">
                           {bunnyReaction ? '≧◡≦' : '- ◡ -'}
                         </div>
                         {/* Pink Cheek */}
-                        <div className="absolute bottom-2 left-2 w-2 h-1 rounded-full bg-pink-300" />
-                        <div className="absolute bottom-2 right-2 w-2 h-1 rounded-full bg-pink-300" />
+                        <div className="absolute bottom-2 left-2.5 w-2 h-1 rounded-full bg-pink-300" />
+                        <div className="absolute bottom-2 right-2.5 w-2 h-1 rounded-full bg-pink-300" />
                         {/* Ears laying back */}
-                        <div className="absolute -top-3.5 left-1 w-3 h-5 rounded-full bg-white border border-stone-200 -rotate-30" />
-                        <div className="absolute -top-3.5 right-1 w-3 h-5 rounded-full bg-white border border-stone-200 rotate-30" />
+                        <div className="absolute -top-3.5 left-1 w-3.5 h-6 rounded-full bg-white border border-stone-200 -rotate-30" />
+                        <div className="absolute -top-3.5 right-1 w-3.5 h-6 rounded-full bg-white border border-stone-200 rotate-30" />
                       </div>
                     </div>
 
                     {/* Floating zZz */}
                     {!bunnyReaction && (
-                      <div className="text-amber-300 text-xs font-black animate-float-z ml-1">
+                      <div className="text-orange-500 text-xs font-black animate-float-z ml-1">
                         zZz
                       </div>
                     )}
@@ -253,14 +261,13 @@ export default function CozyRoomModal({ totalCarrots, onUpdateCarrots, onClose }
               ) : (
                 /* Simple leaf mound & Awake Snowpaw */
                 <div className="relative flex flex-col items-center">
-                  {/* Leaf nest */}
-                  <div className="w-28 h-8 rounded-full bg-amber-900/80 border border-amber-700 flex items-center justify-center">
-                    <div className="w-24 h-6 rounded-full bg-amber-700/60" />
+                  <div className="w-28 h-8 rounded-full bg-amber-300/80 border-2 border-amber-400 flex items-center justify-center shadow-inner">
+                    <div className="w-24 h-5 rounded-full bg-amber-200" />
                   </div>
 
                   {/* Snowpaw nibbling carrot */}
                   <div className="absolute -top-11 flex flex-col items-center">
-                    <div className="relative w-12 h-12 rounded-full bg-white shadow-md border border-stone-200 flex items-center justify-center">
+                    <div className="relative w-12 h-12 rounded-full bg-white shadow-lg border-2 border-stone-200 flex items-center justify-center">
                       {/* Ears */}
                       <div className="absolute -top-4 left-1.5 w-3 h-6 rounded-full bg-white border border-stone-200 -rotate-12 flex justify-center">
                         <div className="w-1.5 h-3.5 bg-pink-200 rounded-full mt-1" />
@@ -270,8 +277,8 @@ export default function CozyRoomModal({ totalCarrots, onUpdateCarrots, onClose }
                       </div>
                       {/* Eyes */}
                       <div className="flex gap-2">
-                        <div className="w-1.5 h-2 rounded-full bg-stone-900" />
-                        <div className="w-1.5 h-2 rounded-full bg-stone-900" />
+                        <div className="w-1.5 h-2 rounded-full bg-amber-950" />
+                        <div className="w-1.5 h-2 rounded-full bg-amber-950" />
                       </div>
                       {/* Tiny carrot held */}
                       <Carrot className="absolute -bottom-1 -right-1 w-5 h-5 text-orange-500 rotate-12" />
@@ -296,24 +303,24 @@ export default function CozyRoomModal({ totalCarrots, onUpdateCarrots, onClose }
             </div>
 
             {/* Tap Hint */}
-            <div className="absolute bottom-2 right-3 text-[10px] text-amber-200/50 font-semibold group-hover:text-amber-200/90 transition">
-              {isZh ? '🐾 輕觸雪波互動' : '🐾 Tap to pet Snowpaw'}
+            <div className="absolute bottom-2 right-3 text-[11px] text-amber-800/80 font-bold group-hover:text-amber-950 transition">
+              {isZh ? '🐾 輕觸雪波撫摸互動' : '🐾 Tap Snowpaw to pet!'}
             </div>
           </div>
 
-          {/* Furniture Workshop Section */}
-          <div className="space-y-2.5">
+          {/* High-Contrast Light Furniture Workshop Section */}
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="font-extrabold text-sm text-[#fff4e0] flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-amber-400" />
+              <h4 className="font-extrabold text-sm sm:text-base text-amber-950 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-amber-500" />
                 <span>{t.furnitureShopTitle}</span>
               </h4>
-              <span className="text-xs text-amber-200/80 font-bold">
+              <span className="text-xs text-amber-800 font-black px-2.5 py-1 rounded-full bg-amber-100 border border-amber-300">
                 {furniture.length} / {FURNITURE_ITEMS.length} {t.placed}
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {FURNITURE_ITEMS.map((item) => {
                 const isOwned = furniture.includes(item.id);
                 const canAfford = totalCarrots >= item.cost;
@@ -323,37 +330,37 @@ export default function CozyRoomModal({ totalCarrots, onUpdateCarrots, onClose }
                 return (
                   <div
                     key={item.id}
-                    className={`p-3 rounded-2xl border transition-all flex flex-col justify-between gap-2.5 ${
+                    className={`p-3.5 rounded-2xl border-2 transition-all flex flex-col justify-between gap-3 ${
                       isOwned
-                        ? 'bg-[#2a170d]/60 border-amber-500/30'
+                        ? 'bg-amber-50/80 border-amber-200'
                         : canAfford
-                        ? 'bg-[#331c0e] hover:bg-[#3d2212] border-orange-500/40 shadow-sm'
-                        : 'bg-[#22130a]/80 border-stone-800 opacity-85'
+                        ? 'bg-white hover:bg-amber-50/40 border-amber-200 shadow-sm hover:border-amber-400'
+                        : 'bg-white/70 border-stone-200 opacity-90'
                     }`}
                   >
-                    <div className="flex items-start gap-2.5">
+                    <div className="flex items-start gap-3">
                       <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border"
+                        className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border-2 shadow-sm"
                         style={{
-                          backgroundColor: `${item.color}20`,
+                          backgroundColor: `${item.color}15`,
                           borderColor: `${item.color}40`,
                           color: item.color,
                         }}
                       >
-                        <IconComponent className="w-5 h-5" />
+                        <IconComponent className="w-6 h-6" />
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-1">
-                          <h5 className="font-extrabold text-sm text-white truncate">
+                        <div className="flex items-center justify-between gap-1.5">
+                          <h5 className="font-black text-sm text-amber-950 truncate">
                             {info.name || item.id}
                           </h5>
-                          <div className="flex items-center gap-1 text-xs font-black text-orange-400 shrink-0">
-                            <Carrot className="w-3.5 h-3.5" />
+                          <div className="flex items-center gap-1 text-xs font-black px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 border border-orange-200 shrink-0">
+                            <Carrot className="w-3.5 h-3.5 text-orange-600" />
                             <span>{item.cost}</span>
                           </div>
                         </div>
-                        <p className="text-[11px] text-amber-200/70 line-clamp-2 mt-0.5 leading-snug">
+                        <p className="text-xs text-amber-900 font-medium line-clamp-2 mt-1 leading-snug">
                           {info.desc}
                         </p>
                       </div>
@@ -361,8 +368,8 @@ export default function CozyRoomModal({ totalCarrots, onUpdateCarrots, onClose }
 
                     {/* Action Button */}
                     {isOwned ? (
-                      <div className="w-full py-1.5 px-3 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 font-extrabold text-xs flex items-center justify-center gap-1.5">
-                        <Check className="w-3.5 h-3.5" />
+                      <div className="w-full py-2 px-3 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-700 font-black text-xs flex items-center justify-center gap-1.5 shadow-sm">
+                        <Check className="w-4 h-4" />
                         <span>{t.placed}</span>
                       </div>
                     ) : (
@@ -370,15 +377,15 @@ export default function CozyRoomModal({ totalCarrots, onUpdateCarrots, onClose }
                         type="button"
                         onClick={() => handleBuy(item)}
                         disabled={!canAfford}
-                        className={`w-full py-2 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer ${
+                        className={`w-full py-2.5 px-3 rounded-xl font-black text-xs flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer shadow-sm ${
                           canAfford
-                            ? 'bg-gradient-to-r from-orange-500 to-amber-500 hover:brightness-110 text-white shadow-md'
-                            : 'bg-black/30 border border-white/10 text-stone-500 cursor-not-allowed'
+                            ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-md'
+                            : 'bg-stone-100 border border-stone-200 text-stone-400 cursor-not-allowed'
                         }`}
                       >
                         {canAfford ? (
                           <>
-                            <Carrot className="w-3.5 h-3.5 text-white" />
+                            <Carrot className="w-4 h-4 text-white" />
                             <span>{t.buy}</span>
                           </>
                         ) : (

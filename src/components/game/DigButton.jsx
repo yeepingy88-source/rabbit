@@ -2,8 +2,8 @@ import React from 'react';
 import { Pickaxe } from 'lucide-react';
 import { DIG_COST } from '@/lib/game/physics';
 
-export default function DigButton({ onDig, stamina, drillActive = false }) {
-  const ready = drillActive || stamina >= DIG_COST;
+export default function DigButton({ onDig, stamina, drillActive = false, cost = DIG_COST }) {
+  const ready = drillActive || stamina >= cost;
   return (
     <button
       onPointerDown={(e) => { e.preventDefault(); onDig(); }}
@@ -24,7 +24,7 @@ export default function DigButton({ onDig, stamina, drillActive = false }) {
             : 'bg-[#2a1a10] text-[#ffd1a3] border-[#fff4e0]/20'
         }`}
       >
-        {drillActive ? '💎破石' : `-${DIG_COST}`}
+        {drillActive ? '💎破石' : `-${cost}`}
       </span>
     </button>
   );

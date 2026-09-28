@@ -1,14 +1,14 @@
-import { PATH, SOFT, STONE, EXIT } from './maze';
+import { PATH, SOFT, STONE, EXIT, BEDROCK } from './maze';
 
 const HALF = 0.27, SPEED = 4.32; // +20% faster exploration (was 3.6)
-// No passive regen — dig must cost real stamina; recover only from water / carrots / brew
-export const DIG_COST = 28;
+// In-level claw dig cost is fixed at 18 stamina per tile
+export const DIG_COST = 18;
 
 function solidAt(s, x, y) {
   const tx = Math.floor(x), ty = Math.floor(y);
   if (tx < 0 || ty < 0 || tx >= s.W || ty >= s.H) return true;
   const v = s.grid[ty][tx];
-  return v === SOFT || v === STONE;
+  return v === SOFT || v === STONE || v === BEDROCK;
 }
 
 function hits(s, x, y) {
@@ -46,12 +46,26 @@ export function step(s, input, dt, ev) {
   s.moving = !!(ix || iy);
   if (s.moving) {
     s.facing = { x: ix, y: iy };
+    // Track horizontal orientation: scaleX(-1) when left, scaleX(1) when right
+    if (ix < -0.05) {
+      s.facingLeft = true;
+    } else if (ix > 0.05) {
+      s.facingLeft = false;
+    }
+
     const currentSpeed = s.speedTimer > 0 ? SPEED * 1.6 : SPEED;
     const d = currentSpeed * dt;
     const nx = s.x + ix * d;
     if (!hits(s, nx, s.y)) s.x = nx; else if (!iy) nudge(s, 'y', Math.sign(ix), d);
     const ny = s.y + iy * d;
     if (!hits(s, s.x, ny)) s.y = ny; else if (!ix) nudge(s, 'x', Math.sign(iy), d);
+
+    // Track revealed footprint trail
+    const curTx = Math.floor(s.x);
+    const curTy = Math.floor(s.y);
+    if (curTx >= 0 && curTx < s.W && curTy >= 0 && curTy < s.H && s.visited) {
+      s.visited[curTy][curTx] = true;
+    }
 
     // Rocket shoes particles
     if (s.speedTimer > 0 && Math.random() < 0.4) {
@@ -66,6 +80,20 @@ export function step(s, input, dt, ev) {
       });
     }
   }
+
+  // Smooth forward angle calculation (screen-space vertical tilt)
+  // targetTilt is in [-π/2, π/2] (upwards is negative, downwards is positive, forward is 0).
+  // Using Math.abs(ix) ensures targetTilt is strictly within [-π/2, π/2],
+  // mathematically prohibiting upside-down flip while smoothly aligning with the forward vector.
+  let targetTilt = s.smoothTilt !== undefined ? s.smoothTilt : 0;
+  if (s.moving) {
+    const absX = Math.abs(ix);
+    targetTilt = Math.atan2(iy, absX);
+  }
+  const rotSpeed = 16; // snappy yet smooth transition
+  s.smoothTilt = (s.smoothTilt !== undefined ? s.smoothTilt : 0) +
+    (targetTilt - (s.smoothTilt !== undefined ? s.smoothTilt : 0)) * Math.min(1, dt * rotSpeed);
+
   for (const c of s.carrots) {
     if (!c.taken && Math.hypot(c.x + 0.5 - s.x, c.y + 0.5 - s.y) < 0.55) {
       c.taken = true;
@@ -81,8 +109,9 @@ export function step(s, input, dt, ev) {
       ev.push('water');
     }
   }
+  // Grass roots & craft materials pickup (comfortable 0.6 tile radius)
   for (const m of s.materials) {
-    if (!m.taken && Math.hypot(m.x + 0.5 + m.ox - s.x, m.y + 0.5 + m.oy - s.y) < 0.55) {
+    if (!m.taken && Math.hypot(m.x + 0.5 + m.ox - s.x, m.y + 0.5 + m.oy - s.y) < 0.6) {
       m.taken = true;
       ev.push(m.type);
     }
@@ -113,9 +142,14 @@ export function step(s, input, dt, ev) {
         ev.push('hotSpring');
       }
 
-      // 2. Mole Peddler (near notification)
-      if (enc.type === 'merchant' && dist < 0.8) {
-        ev.push('nearMerchant');
+      // 2. Mole Peddler (near notification - trigger once per proximity approach)
+      if (enc.type === 'merchant') {
+        if (dist < 0.85 && !s.merchantNotified) {
+          s.merchantNotified = true;
+          ev.push('nearMerchant');
+        } else if (dist > 1.8) {
+          s.merchantNotified = false;
+        }
       }
 
       // 3. Mysterious Lucky Box (chest opening)
@@ -176,15 +210,17 @@ export function step(s, input, dt, ev) {
         }
       }
 
-      // Check collision with bunny
+      // Check collision with bunny (< 0.7 tiles radius)
       const dist = Math.hypot(s.x - b.x, s.y - b.y);
-      if (dist < 0.65 && (!s.beetleCooldown || s.beetleCooldown <= 0)) {
-        s.beetleCooldown = 1.0; // 1s invulnerability cooldown
+      const isInvincible = (s.invincibleUntil && Date.now() < s.invincibleUntil) || (s.beetleCooldown > 0);
+      if (dist < 0.7 && !isInvincible) {
+        s.invincibleUntil = Date.now() + 2000;
+        s.beetleCooldown = 2.0; // 2s invulnerability cooldown
         s.stamina = Math.max(0, s.stamina - 25);
         s.shake = 0.35; // screen shake
         ev.push('beetleBite');
 
-        // Bunny bounces back 1 step
+        // Bunny bounces back 1 step (1 full tile knockback)
         let pushX = s.x - b.x;
         let pushY = s.y - b.y;
         const len = Math.hypot(pushX, pushY) || 1;
@@ -206,7 +242,7 @@ export function step(s, input, dt, ev) {
         }
 
         // Damage particles
-        for (let i = 0; i < 14; i++) {
+        for (let i = 0; i < 16; i++) {
           const a = Math.random() * Math.PI * 2, v = 1.5 + Math.random() * 3.5;
           s.particles.push({
             x: s.x,
@@ -237,6 +273,13 @@ export function dig(s) {
   // Dig only interior walls (keep outer border solid)
   const inside = (x, y) => x > 0 && y > 0 && x < s.W - 1 && y < s.H - 1;
 
+  // Bedrock Protection: Cannot be drilled or dug
+  const bedrock = cands.some(([x, y]) => inside(x, y) && s.grid[y]?.[x] === BEDROCK);
+  if (bedrock && (!s.drillActive || !cands.some(([x, y]) => inside(x, y) && (s.grid[y][x] === STONE || s.grid[y][x] === SOFT)))) {
+    s.shake = 0.2;
+    return 'bedrock';
+  }
+
   // Rock Breaker Drill: permanently destroys 1 solid stone wall (or soft wall)
   if (s.drillActive) {
     const stoneTarget = cands.find(([x, y]) => inside(x, y) && s.grid[y][x] === STONE);
@@ -244,7 +287,12 @@ export function dig(s) {
     if (target) {
       const [x, y] = target;
       s.grid[y][x] = PATH;
-      s.drillActive = false;
+      if (s.drillUses && s.drillUses > 1) {
+        s.drillUses -= 1;
+      } else {
+        s.drillActive = false;
+        s.drillUses = 0;
+      }
       s.digs++;
       s.shake = 0.35;
       for (let i = 0; i < 32; i++) {
@@ -276,9 +324,10 @@ export function dig(s) {
     return stone ? 'stone' : 'none';
   }
   const [x, y] = soft;
+  const cost = s.digCost || DIG_COST;
   if (s.freeDigs > 0) s.freeDigs--;
-  else if (s.stamina < DIG_COST) return 'tired';
-  else s.stamina -= DIG_COST;
+  else if (s.stamina < cost) return 'tired';
+  else s.stamina -= cost;
   s.grid[y][x] = PATH;
   s.digs++;
   s.shake = 0.12;

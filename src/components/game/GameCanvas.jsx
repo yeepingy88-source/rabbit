@@ -31,16 +31,23 @@ export default function GameCanvas({ stateRef, inputRef, pausedRef, onStamina, o
           const ev = [];
           step(s, inputRef.current, dt, ev);
           ev.forEach((e) => {
-            if (e === 'pickup') sfx.pickup();
-            else if (e === 'water') sfx.water();
-            else if (e === 'fiber' || e === 'clay') sfx.material();
-            else if (e === 'win') cb.current.onWin();
-            else if (e === 'beetleBite') {
+            if (e === 'pickup') {
+              sfx.pickup();
+              cb.current.onCollect('pickup');
+            } else if (e === 'water') {
+              sfx.water();
+              cb.current.onCollect('water');
+            } else if (e === 'fiber' || e === 'clay' || e === 'shard') {
+              sfx.material();
+              cb.current.onCollect(e);
+            } else if (e === 'win') {
+              cb.current.onWin();
+            } else if (e === 'beetleBite') {
               sfx.bite();
               cb.current.onCollect('beetleBite');
             } else if (e === 'exhaustedByBeetle') {
               cb.current.onCollect('exhaustedByBeetle');
-            } else if (e !== 'win') {
+            } else {
               cb.current.onCollect(e);
             }
           });

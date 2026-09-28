@@ -28,7 +28,10 @@ export function render(ctx, fog, s, w, h, t, dpr) {
   const x0 = Math.max(0, Math.floor(camX / ts)), x1 = Math.min(s.W - 1, Math.ceil((camX + w) / ts));
   const y0 = Math.max(0, Math.floor(camY / ts)), y1 = Math.min(s.H - 1, Math.ceil((camY + h) / ts));
   for (let y = y0; y <= y1; y++)
-    for (let x = x0; x <= x1; x++) drawTile(ctx, s.grid[y][x], x * ts, y * ts, ts, x, y, t);
+    for (let x = x0; x <= x1; x++) {
+      const isVisited = !!(s.visited && s.visited[y]?.[x]);
+      drawTile(ctx, s.grid[y][x], x * ts, y * ts, ts, x, y, t, isVisited);
+    }
 
   drawBurrow(ctx, (s.start.x + 0.5) * ts, (s.start.y + 0.5) * ts, ts);
   drawRoots(ctx, (s.landmark.x + 0.5) * ts, (s.landmark.y + 0.5) * ts, ts * 2);
@@ -75,10 +78,11 @@ export function render(ctx, fog, s, w, h, t, dpr) {
     drawBeetle(ctx, b.x * ts, b.y * ts, ts, b, t);
   });
 
-  // Bunny blink feedback during invulnerability cooldown
-  const isBlinking = s.beetleCooldown > 0 && Math.floor(t * 20) % 2 === 0;
-  if (isBlinking) ctx.globalAlpha = 0.45;
-  drawBunny(ctx, s.x * ts, s.y * ts, ts, s.facing, t, s.moving, s.drillActive);
+  // Bunny blink feedback during 2-second invulnerability cooldown
+  const isInvincible = (s.beetleCooldown > 0) || (s.invincibleUntil && Date.now() < s.invincibleUntil);
+  const isBlinking = isInvincible && Math.floor(t * 16) % 2 === 0;
+  if (isBlinking) ctx.globalAlpha = 0.35;
+  drawBunny(ctx, s.x * ts, s.y * ts, ts, s.facing, t, s.moving, s.drillActive, s.facingLeft, s.smoothTilt);
   ctx.globalAlpha = 1;
   ctx.restore();
 
@@ -103,7 +107,21 @@ export function render(ctx, fog, s, w, h, t, dpr) {
     g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
     f.fillStyle = g; f.beginPath(); f.arc(x, y, r, 0, Math.PI * 2); f.fill();
   };
-  hole(s.x * ts - camX, s.y * ts - camY, ts * 2.8);
+
+  // Dynamic High-Level Vision Scaling:
+  // visionRadius = min(5.2, 2.8 + (mazeSize - 15) * 0.09)
+  // High-level lighting items (Lv 20+ Torch, Lv 30+ Glowbug, Lv 36+ Battery Headlamp)
+  const mazeSize = s.W || 15;
+  const baseVisionRadius = Math.min(5.2, 2.8 + (mazeSize - 15) * 0.09);
+  const levelLightBonus = s.level >= 36 ? 0.9 : s.level >= 30 ? 0.6 : s.level >= 20 ? 0.35 : 0;
+  const effectiveVisionRadius = Math.min(5.6, baseVisionRadius + levelLightBonus);
+
+  hole(s.x * ts - camX, s.y * ts - camY, ts * effectiveVisionRadius);
+
+  // Illuminate patrolling beetles in the dark to plan evasion/digging
+  (s.beetles || []).forEach((b) => {
+    hole(b.x * ts - camX, b.y * ts - camY, ts * 0.95);
+  });
   s.droplets.forEach((d) => !d.taken && hole((d.x + 0.5 + d.ox) * ts - camX, (d.y + 0.5 + d.oy) * ts - camY, ts * (1 + 0.1 * Math.sin(t * 2.5 + d.x))));
   s.materials
     .filter((m) => m.type === 'shard' && !m.taken)
